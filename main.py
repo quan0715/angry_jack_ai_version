@@ -1,6 +1,15 @@
 import random
 
+class Direction:
+    UP = "UP"
+    DOWN = "DOWN"
+    LEFT = "LEFT"
+    RIGHT = "RIGHT"
+
 class Position:
+    MAX_X: int = 0
+    MAX_Y: int = 0
+
     def __init__(self, x: int, y: int):
         self.x = x
         self.y = y
@@ -14,10 +23,21 @@ class Position:
         self.y = y
 
     @classmethod
-    def random_position(cls, max_x: int = 0, max_y: int = 100):
-        random_x = random.randint(0, max_x)
-        random_y = random.randint(0, max_y)
+    def random_position(cls, ):
+        random_x = random.randint(0, Position.MAX_X - 1)
+        random_y = random.randint(0, Position.MAX_Y - 1)
         return Position(random_x, random_y)
+
+    @classmethod
+    def config(self, max_x: int = 100, max_y: int = 100) -> None:
+        """
+        configuration of the border
+        :param max_x:
+        :param max_y:
+        :return: None
+        """
+        Position.MAX_X = max_x
+        Position.MAX_Y = max_y
 
     def __repr__(self):
         return f"position (x: {self.x},y: {self.y})"
@@ -42,20 +62,49 @@ class Food:
 
 
 class Snake:
-    pass
+    UNIT = 5
+
+    def __init__(self):
+        self.head_pos: Position = Position.random_position()
+        self.bodies: [Position] = [self.head_pos]
+        self.length = len(self)
+
+    def __len__(self):
+        return len(self.bodies)
+
+    def move_up(self):
+        for body in self.bodies:
+            body.update_pos(body.x, body.y + Snake.UNIT)
+
+    def move_down(self):
+        for body in self.bodies:
+            body.update_pos(body.x, body.y - Snake.UNIT)
+
+    def move_right(self):
+        for body in self.bodies:
+            body.update_pos(body.x + Snake.UNIT, body.y)
+
+    def move_left(self):
+        for body in self.bodies:
+            body.update_pos(body.x - Snake.UNIT, body.y)
+
+
 
 
 class Game:
     X_MAX = 100
     Y_MAX = 100
+    UNIT = 5
+
     def __init__(self):
-        self.snake: Snake = Snake()
+        self.snake: Snake
+        self.foods: list[Food] = []
 
     def check_status(self):
         pass
 
     def game_init(self):
-        food = Food.new_food()
+        self.foods.append(Food.new_food())
 
 
 def main():
@@ -63,7 +112,6 @@ def main():
     status = "start"
     game = Game()
     while status != "stop":
-
         status = game.check_status()
 
 

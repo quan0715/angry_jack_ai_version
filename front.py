@@ -4,7 +4,8 @@ from pygame.locals import *
 import sys
 from logic import Snake, Food, Boarder
 
-class Game():
+
+class Game:
     def __init__(self):
         pygame.init()
         self.isGameover=False

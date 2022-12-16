@@ -58,7 +58,7 @@ class Snake():
         return False
 
 
-class Food():
+class Food:
     def __init__(self,cellWidthNum,cellHeightNum,snake1,snake2):
         self.snake1=snake1
         self.snake2=snake2
