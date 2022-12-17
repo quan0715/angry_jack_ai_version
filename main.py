@@ -1,10 +1,12 @@
 import random
 
+
 class Direction:
     UP = "UP"
     DOWN = "DOWN"
     LEFT = "LEFT"
     RIGHT = "RIGHT"
+
 
 class Position:
     MAX_X: int = 0
@@ -68,6 +70,7 @@ class Snake:
         self.head_pos: Position = Position.random_position()
         self.bodies: [Position] = [self.head_pos]
         self.length = len(self)
+        self.directions: [str] = [Direction.UP]
 
     def __len__(self):
         return len(self.bodies)
@@ -88,16 +91,28 @@ class Snake:
         for body in self.bodies:
             body.update_pos(body.x - Snake.UNIT, body.y)
 
+    def moving(self):
+        for next_direction in self.directions:
+            if next_direction == Direction.UP:
+                self.move_up()
+            if next_direction == Direction.DOWN:
+                self.move_down()
+            if next_direction == Direction.LEFT:
+                self.move_left()
+            if next_direction == Direction.RIGHT:
+                self.move_right()
+            status = self.check_vaild()
 
 
-
+class GameMap:
+    def __init__(self, border_width, border_height, unit):
+        self.border_width = border_width
+        self.snake: Snake = border_height
+        self.unit = unit
 class Game:
-    X_MAX = 100
-    Y_MAX = 100
-    UNIT = 5
-
-    def __init__(self):
-        self.snake: Snake
+    def __init__(self, border_width, border_height, grid_length):
+        self.game_map = GameMap(border_width, border_height, grid_length)
+        self.snake: Snake = Snake()
         self.foods: list[Food] = []
 
     def check_status(self):
