@@ -74,7 +74,7 @@ class Food:
         self.position['x']=x
         self.position['y']=y
 
-class Boarder():
+class Boarder:
     def __init__(self,boarderWidth,boarderHeight,cellLength):
         self.boarderWidth=boarderWidth
         self.boarderHeight=boarderHeight
