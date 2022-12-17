@@ -26,13 +26,16 @@ class GameMap:
     def get_grid_size(self)->(int, int):
         return self.grid_width, self.grid_height
 
+    def get_unit_size(self)->(int, int):
+        return self.unit, self.unit
+
 class Position:
     game_map: GameMap
     def __init__(self, x: int, y: int):
         self.x = x
         self.y = y
-        self.grid_x = self.x * Position.game_map.unit
-        self.grid_y = self.y * Position.game_map.unit
+        self.grid_x = self.x // Position.game_map.unit
+        self.grid_y = self.y // Position.game_map.unit
     def get_pos(self) -> tuple:
         return self.x, self.y,
     def get_gird_pos(self) -> tuple:
@@ -41,8 +44,8 @@ class Position:
     def update_pos(self, x: int, y: int):
         self.x = x
         self.y = y
-        self.grid_x = self.x * Position.game_map.unit
-        self.grid_y = self.y * Position.game_map.unit
+        self.grid_x = self.x // Position.game_map.unit
+        self.grid_y = self.y // Position.game_map.unit
 
     @classmethod
     def random_position(cls,):
@@ -79,7 +82,7 @@ class Food:
         return f"Food: {id(self)} at {self.pos}"
 
     def draw(self, screen):
-        pg.draw.rect(screen,(255,0,0),pg.Rect(*self.pos.get_pos()))
+        pg.draw.rect(screen,(255,0,0),pg.Rect(*self.pos.get_pos(),Food.game_map.unit,Food.game_map.unit))
 
 class Snake:
     game_map: GameMap
@@ -154,6 +157,7 @@ class Game:
         Snake.setting(self.game_map)
         Food.setting(self.game_map)
         self.snake: Snake = Snake()
+        self.food: Food = Food()
         self.foods: list[Food] = []
         self.game_over: bool = False
 
@@ -193,6 +197,7 @@ class Game:
             if self.snake.directions.empty():
                 self.snake.directions.put(self.snake.last_direction)
             self.snake.moving(background)
+            self.food.draw(background)
             screen.blit(background, (0, 0))
             pg.display.flip()
 def main():
