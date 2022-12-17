@@ -1,9 +1,16 @@
 import random
+import time
+from copy import copy
+from queue import Queue
+import pygame as pg
+from pygame.locals import *
+import sys
 class Direction:
     UP = "UP"
     DOWN = "DOWN"
     LEFT = "LEFT"
     RIGHT = "RIGHT"
+
 
 class GameMap:
     def __init__(self, map_width: int, map_height: int, unit: int):
@@ -12,6 +19,12 @@ class GameMap:
         self.unit: int = unit
         self.grid_width: int = self.map_width // self.unit
         self.grid_height: int = self.map_height // self.unit
+
+    def get_map_size(self) -> (int, int):
+        return self.map_width, self.map_height
+
+    def get_grid_size(self)->(int, int):
+        return self.grid_width, self.grid_height
 
 class Position:
     game_map: GameMap
@@ -32,9 +45,9 @@ class Position:
         self.grid_y = self.y * Position.game_map.unit
 
     @classmethod
-    def random_position(cls, ):
-        random_x = random.randint(0, Position.game_map.grid_width - 1) // cls.game_map.unit
-        random_y = random.randint(0, Position.game_map.grid_height - 1) // cls.game_map.unit
+    def random_position(cls,):
+        random_x = random.randint(0, Position.game_map.grid_width - 1) * cls.game_map.unit
+        random_y = random.randint(0, Position.game_map.grid_height - 1) * cls.game_map.unit
         return Position(random_x, random_y)
     @classmethod
     def setting(cls, game_map: GameMap):
@@ -65,56 +78,74 @@ class Food:
     def __repr__(self):
         return f"Food: {id(self)} at {self.pos}"
 
+    def draw(self, screen):
+        pg.draw.rect(screen,(255,0,0),pg.Rect(*self.pos.get_pos()))
 
 class Snake:
     game_map: GameMap
+
     def __init__(self):
         self.head_pos: Position = Position.random_position()
         self.bodies: [Position] = [self.head_pos]
         self.length = len(self)
-        self.directions: [str] = [Direction.UP]
+        self.last_direction = None
+        self.directions:Queue = Queue()
+        self.directions.put(Direction.LEFT if self.head_pos.x > Snake.game_map.map_width // 2 else Direction.RIGHT)
+        self.head_color = pg.Color("#FFC645")
+        self.tail_color = pg.Color("#F6BB75")
+        print(f"snake generate at {self.head_pos}")
 
     def __len__(self):
         return len(self.bodies)
 
     def move_up(self):
         for body in self.bodies:
-            body.update_pos(body.x, body.y + Snake.game_map.unit)
-
+            body.update_pos(body.x, body.y - Snake.game_map.unit)
+        self.last_direction = Direction.UP
     def move_down(self):
         for body in self.bodies:
-            body.update_pos(body.x, body.y - Snake.game_map.unit)
+            body.update_pos(body.x, body.y + Snake.game_map.unit)
+        self.last_direction = Direction.DOWN
 
     def move_right(self):
         for body in self.bodies:
             body.update_pos(body.x + Snake.game_map.unit, body.y)
+        self.last_direction = Direction.RIGHT
 
     def move_left(self):
         for body in self.bodies:
             body.update_pos(body.x - Snake.game_map.unit, body.y)
+        self.last_direction = Direction.LEFT
 
-    def moving(self):
-        for next_direction in self.directions:
-
-            if next_direction == Direction.UP:
+    def moving(self, screen):
+        while not self.directions.empty():
+            direction = self.directions.get()
+            print(direction, list(self.directions.queue))
+            if direction == Direction.UP and self.last_direction != Direction.DOWN:
                 self.move_up()
-
-            if next_direction == Direction.DOWN:
+            if direction == Direction.DOWN and self.last_direction != Direction.UP:
                 self.move_down()
-
-            if next_direction == Direction.LEFT:
+            if direction == Direction.LEFT and self.last_direction != Direction.RIGHT:
                 self.move_left()
-
-            if next_direction == Direction.RIGHT:
+            if direction == Direction.RIGHT and self.last_direction != Direction.LEFT:
                 self.move_right()
-
-            status = self.check_vaild()
+            self.draw(screen)
+    def draw(self, surface):
+        # draw head (with different color)
+        surface.fill(BACKGROUND_COLOR)
+        print(f"draw head at {self.head_pos}")
+        h_x, h_y = self.head_pos.get_pos()
+        head_rect = pg.Rect(h_x, h_y, Snake.game_map.unit, Snake.game_map.unit)
+        pg.draw.rect(surface, self.head_color, head_rect)
+        # draw tail (with different color)
+        for tail_pos in self.bodies[1:]:
+            t_x, t_y = tail_pos.get_pos()
+            tail_rect = pg.Rect(t_x, t_y, Snake.game_map.unit, Snake.game_map.unit)
+            pg.draw.rect(surface, self.tail_color, tail_rect)
 
     @classmethod
-    def setting(cls,game_map: GameMap):
+    def setting(cls, game_map: GameMap):
         cls.game_map: GameMap = game_map
-
-
 
 class Game:
     def __init__(self, max_width, max_height, unit):
@@ -124,22 +155,53 @@ class Game:
         Food.setting(self.game_map)
         self.snake: Snake = Snake()
         self.foods: list[Food] = []
+        self.game_over: bool = False
 
     def check_status(self):
         pass
 
     def game_init(self):
-        self.foods.append(Food.new_foogit)
-
-    def move(self, direction: str):
-        self.snake.directions.append(direction)
+        self.foods.append(Food.new_food())
 
 
-
+    def run(self):
+        pg.init()
+        pg.display.set_caption("Snake")
+        screen = pg.display.set_mode(self.game_map.get_map_size())
+        background = pg.Surface(screen.get_size())
+        background.fill(BACKGROUND_COLOR)
+        # font = pg.font.SysFont("Roboto" , 25)
+        while True:
+            time.sleep(0.1)
+            for event in pg.event.get():
+                if event.type == QUIT:
+                    pg.quit()
+                    sys.exit()
+                elif event.type == KEYDOWN:
+                    if event.type == K_ESCAPE:
+                        sys.exit()
+                    elif not self.game_over:
+                        if event.key == K_RIGHT:
+                            self.snake.directions.put(Direction.RIGHT)
+                        if event.key == K_LEFT:
+                            self.snake.directions.put(Direction.LEFT)
+                        if event.key == K_UP:
+                            self.snake.directions.put(Direction.UP)
+                        if event.key == K_DOWN:
+                            self.snake.directions.put(Direction.DOWN)
+            background.fill(BACKGROUND_COLOR)
+            if self.snake.directions.empty():
+                self.snake.directions.put(self.snake.last_direction)
+            self.snake.moving(background)
+            screen.blit(background, (0, 0))
+            pg.display.flip()
 def main():
-    BORDER_WIDTH = 100
-    game = Game()
+    game = Game(MAX_WIDTH, MAX_HEIGHT, UNIT)
+    game.run()
 
-
-if __name__ == "main":
+if __name__ == '__main__':
+    MAX_WIDTH = 400
+    MAX_HEIGHT = 400
+    UNIT = 20
+    BACKGROUND_COLOR = (0, 0, 0) # black
     main()
