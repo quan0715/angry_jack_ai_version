@@ -92,37 +92,35 @@ class Snake:
         self.directions:Queue = Queue()
         self.directions.put(Direction.LEFT if self.head_pos.x > Snake.game_map.map_width // 2 else Direction.RIGHT)
         self.head_color = pg.Color("#FFC645")
-        self.tail_color = pg.Color("#F6BB75")
+        self.tail_color = pg.Color("#FFDF96")
         print(f"snake generate at {self.head_pos}")
 
     def __len__(self):
         return len(self.bodies)
 
     def move_up(self):
-        self.bodies.insert(0,Position(self.bodies[0].x,self.bodies[0].y-Snake.game_map.unit))
+        self.head_pos = Position(self.bodies[0].x,self.bodies[0].y-Snake.game_map.unit)
+        self.bodies.insert(0,self.head_pos)
         self.bodies.pop(len(self.bodies)-1)
         # for body in self.bodies:
         #     body.update_pos(body.x, body.y - Snake.game_map.unit)
         self.last_direction = Direction.UP
     def move_down(self):
-        self.bodies.insert(0,Position(self.bodies[0].x,self.bodies[0].y+Snake.game_map.unit))
+        self.head_pos = Position(self.bodies[0].x,self.bodies[0].y+Snake.game_map.unit)
+        self.bodies.insert(0, self.head_pos)
         self.bodies.pop(len(self.bodies)-1)
-        # for body in self.bodies:
-        #     body.update_pos(body.x, body.y + Snake.game_map.unit)
         self.last_direction = Direction.DOWN
 
     def move_right(self):
-        self.bodies.insert(0,Position(self.bodies[0].x+Snake.game_map.unit,self.bodies[0].y))
+        self.head_pos = Position(self.bodies[0].x+Snake.game_map.unit,self.bodies[0].y)
+        self.bodies.insert(0,self.head_pos)
         self.bodies.pop(len(self.bodies)-1)
-        # for body in self.bodies:
-        #     body.update_pos(body.x + Snake.game_map.unit, body.y)
         self.last_direction = Direction.RIGHT
 
     def move_left(self):
-        self.bodies.insert(0,Position(self.bodies[0].x-Snake.game_map.unit,self.bodies[0].y))
+        self.head_pos = Position(self.bodies[0].x-Snake.game_map.unit,self.bodies[0].y)
+        self.bodies.insert(0,self.head_pos)
         self.bodies.pop(len(self.bodies)-1)
-        # for body in self.bodies:
-        #     body.update_pos(body.x - Snake.game_map.unit, body.y)
         self.last_direction = Direction.LEFT
 
     def moving(self, screen):
@@ -141,8 +139,8 @@ class Snake:
             self.draw(screen)
     def draw(self, surface):
         # draw head (with different color)
-        surface.fill(BACKGROUND_COLOR)
-        print(f"draw head at {self.head_pos}")
+        # surface.fill(BACKGROUND_COLOR)
+        # print(f"draw head at {self.head_pos}")
         h_x, h_y = self.head_pos.get_pos()
         head_rect = pg.Rect(h_x, h_y, Snake.game_map.unit, Snake.game_map.unit)
         pg.draw.rect(surface, self.head_color, head_rect)
@@ -174,14 +172,15 @@ class Game:
         self.foods.append(Food.new_food())
 
     def touch_wall(self):
+        snake_x, snake_y = self.snake.head_pos.get_pos()
         boarder_width , boarder_height = self.game_map.get_map_size()
-        if self.snake.head_pos.x < 0 or self.snake.head_pos.x >= boarder_width or self.snake.head_pos.y < 0 or self.snake.head_pos.y >= boarder_height:
+        if snake_x < 0 or snake_x >= boarder_width or snake_y < 0 or snake_y >= boarder_height:
             return True
         return False
 
     def touch_body(self):
         for tail_pos in self.snake.bodies[1:]:
-            if self.snake.bodies[0].get_pos() == tail_pos.get_pos():
+            if self.snake.head_pos.get_pos() == tail_pos.get_pos():
                 return True
         return False
 
@@ -215,7 +214,7 @@ class Game:
         background.fill(BACKGROUND_COLOR)
         # font = pg.font.SysFont("Roboto" , 25)
         while not self.game_over:
-            time.sleep(0.3)
+            time.sleep(0.1)
             for event in pg.event.get():
                 if event.type == QUIT:
                     pg.quit()
