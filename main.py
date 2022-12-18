@@ -26,9 +26,6 @@ class GameMap:
     def get_grid_size(self)->(int, int):
         return self.grid_width, self.grid_height
 
-    def get_unit_size(self)->(int, int):
-        return self.unit, self.unit
-
 class Position:
     game_map: GameMap
     def __init__(self, x: int, y: int):
@@ -102,22 +99,30 @@ class Snake:
         return len(self.bodies)
 
     def move_up(self):
-        for body in self.bodies:
-            body.update_pos(body.x, body.y - Snake.game_map.unit)
+        self.bodies.insert(0,Position(self.bodies[0].x,self.bodies[0].y-Snake.game_map.unit))
+        self.bodies.pop(len(self.bodies)-1)
+        # for body in self.bodies:
+        #     body.update_pos(body.x, body.y - Snake.game_map.unit)
         self.last_direction = Direction.UP
     def move_down(self):
-        for body in self.bodies:
-            body.update_pos(body.x, body.y + Snake.game_map.unit)
+        self.bodies.insert(0,Position(self.bodies[0].x,self.bodies[0].y+Snake.game_map.unit))
+        self.bodies.pop(len(self.bodies)-1)
+        # for body in self.bodies:
+        #     body.update_pos(body.x, body.y + Snake.game_map.unit)
         self.last_direction = Direction.DOWN
 
     def move_right(self):
-        for body in self.bodies:
-            body.update_pos(body.x + Snake.game_map.unit, body.y)
+        self.bodies.insert(0,Position(self.bodies[0].x+Snake.game_map.unit,self.bodies[0].y))
+        self.bodies.pop(len(self.bodies)-1)
+        # for body in self.bodies:
+        #     body.update_pos(body.x + Snake.game_map.unit, body.y)
         self.last_direction = Direction.RIGHT
 
     def move_left(self):
-        for body in self.bodies:
-            body.update_pos(body.x - Snake.game_map.unit, body.y)
+        self.bodies.insert(0,Position(self.bodies[0].x-Snake.game_map.unit,self.bodies[0].y))
+        self.bodies.pop(len(self.bodies)-1)
+        # for body in self.bodies:
+        #     body.update_pos(body.x - Snake.game_map.unit, body.y)
         self.last_direction = Direction.LEFT
 
     def moving(self, screen):
@@ -132,6 +137,7 @@ class Snake:
                 self.move_left()
             if direction == Direction.RIGHT and self.last_direction != Direction.LEFT:
                 self.move_right()
+            self.head_pos = self.bodies[0]
             self.draw(screen)
     def draw(self, surface):
         # draw head (with different color)
@@ -157,8 +163,8 @@ class Game:
         Snake.setting(self.game_map)
         Food.setting(self.game_map)
         self.snake: Snake = Snake()
-        self.food: Food = Food()
         self.foods: list[Food] = []
+        self.eaten_foods: list[Food] = []
         self.game_over: bool = False
 
     def check_status(self):
@@ -167,16 +173,49 @@ class Game:
     def game_init(self):
         self.foods.append(Food.new_food())
 
+    def touch_wall(self):
+        boarder_width , boarder_height = self.game_map.get_map_size()
+        if self.snake.head_pos.x < 0 or self.snake.head_pos.x >= boarder_width or self.snake.head_pos.y < 0 or self.snake.head_pos.y >= boarder_height:
+            return True
+        return False
+
+    def touch_body(self):
+        for tail_pos in self.snake.bodies[1:]:
+            if self.snake.bodies[0].get_pos() == tail_pos.get_pos():
+                return True
+        return False
+
+    def touch_food(self):
+        if self.snake.head_pos.get_pos() == self.foods[-1].pos.get_pos():
+            self.foods[-1].be_eaten(self.snake)
+            self.eaten_foods.append(self.foods[-1])
+            print(self.snake.bodies)
+            self.foods.append(Food.new_food())
+            
+    
+    def add_tail(self):
+        # if len(self.eaten_foods)!=0 and self.snake.bodies[-1] == self.eaten_foods[0]:
+        #     self.snake.bodies.append(self.eaten_foods[0].pos)
+        #     self.eaten_foods.pop(0)
+        for food in self.eaten_foods:
+            food_in_body = False
+            for body in self.snake.bodies:
+                if food.pos.get_pos() == body.get_pos():
+                    food_in_body = True
+            if not food_in_body:
+                self.snake.bodies.append(food.pos)
+                self.eaten_foods.pop(0)
 
     def run(self):
         pg.init()
+        self.game_init()
         pg.display.set_caption("Snake")
         screen = pg.display.set_mode(self.game_map.get_map_size())
         background = pg.Surface(screen.get_size())
         background.fill(BACKGROUND_COLOR)
         # font = pg.font.SysFont("Roboto" , 25)
-        while True:
-            time.sleep(0.1)
+        while not self.game_over:
+            time.sleep(0.3)
             for event in pg.event.get():
                 if event.type == QUIT:
                     pg.quit()
@@ -194,10 +233,13 @@ class Game:
                         if event.key == K_DOWN:
                             self.snake.directions.put(Direction.DOWN)
             background.fill(BACKGROUND_COLOR)
+            self.game_over = self.touch_wall() or self.touch_body()
             if self.snake.directions.empty():
                 self.snake.directions.put(self.snake.last_direction)
+            self.touch_food()
+            self.add_tail()
             self.snake.moving(background)
-            self.food.draw(background)
+            self.foods[-1].draw(background)
             screen.blit(background, (0, 0))
             pg.display.flip()
 def main():
