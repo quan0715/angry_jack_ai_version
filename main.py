@@ -17,9 +17,9 @@ class Config:
     tail_color:pg.Color = pg.Color("#FFDF96") # the color of snake tail(body)
     food_color:pg.Color = pg.Color("#93FFAB") # the color of default food
     line_color:pg.Color = pg.Color("#FFFFFF") # the color of auxiliary line
-    map_max_width: int = 800 # the maximum value of the border width (Cartesian coordinate)
-    map_max_height: int = 800 # the maximum value of the height width
-    grid_width: int = 40 # the value of the grid width (rectangle)
+    map_max_width: int = 600 # the maximum value of the border width (Cartesian coordinate)
+    map_max_height: int = 600 # the maximum value of the height width
+    grid_width: int = 30 # the value of the grid width (rectangle)
     grid_max_width: int = map_max_width // grid_width # Cartesian coordinate which unit equals to grid_with
     grid_max_height: int = map_max_height // grid_width
     @classmethod
@@ -59,6 +59,21 @@ class Position:
         self.grid_x = self.x // Config.grid_width
         self.grid_y = self.y // Config.grid_width
 
+    def get_all_orientation(self)->dict:
+        b_x, b_y = Config.get_map_size()
+        mid_x, mid_y = self.x + Config.grid_width // 2, self.y + Config.grid_width // 2
+        distance = lambda t: (t[0] ** 2 + t[1] ** 2) ** 0.5
+        orientation = {
+            "E": abs(mid_x - b_x), # 東方
+            "S": abs(mid_y - b_y), # 南方
+            "N": mid_y, # 北方
+            "W": mid_x, # 西方
+        }
+        orientation["EN"] = distance((orientation["E"], orientation["N"])) # 東北
+        orientation["WN"] = distance((orientation["W"], orientation["N"])) # 西北
+        orientation["ES"] = distance((orientation["E"], orientation["S"])) # 東南
+        orientation["WS"] = distance((orientation["W"], orientation["S"])) # 西南
+        return orientation
     def __repr__(self):
         return f"position (x: {self.x},y: {self.y})"
 
@@ -113,7 +128,7 @@ class Snake:
     def moving(self):
         while not self.directions.empty():
             direction = self.directions.get()
-            print(direction, list(self.directions.queue))
+            # print(direction, list(self.directions.queue))
             if direction == Direction.UP and self.last_direction != Direction.DOWN:
                 self.move_up()
             if direction == Direction.DOWN and self.last_direction != Direction.UP:
@@ -123,18 +138,32 @@ class Snake:
             if direction == Direction.RIGHT and self.last_direction != Direction.LEFT:
                 self.move_right()
             self.head_pos = self.bodies[0]
-    def draw(self, surface):
+        print(self.head_pos.get_all_orientation())
+    def draw(self, screen, draw_line = True):
         # draw head (with different color)
         # surface.fill(BACKGROUND_COLOR)
         # print(f"draw head at {self.head_pos}")
         h_x, h_y = self.head_pos.get_pos()
         head_rect = pg.Rect(h_x, h_y, Config.grid_width, Config.grid_width)
-        pg.draw.rect(surface, Config.head_color, head_rect)
+        pg.draw.rect(screen, Config.head_color, head_rect)
         # draw tail (with different color)
         for tail_pos in self.bodies[1:]:
             t_x, t_y = tail_pos.get_pos()
             tail_rect = pg.Rect(t_x, t_y, Config.grid_width, Config.grid_width)
-            pg.draw.rect(surface, Config.tail_color, tail_rect)
+            pg.draw.rect(screen, Config.tail_color, tail_rect)
+
+        if draw_line:
+            orientation: dict = self.head_pos.get_all_orientation()
+            b_x, b_y = Config.get_map_size()
+            mid_x, mid_y = self.head_pos.x + Config.grid_width // 2, self.head_pos.y + Config.grid_width // 2
+            pg.draw.line(screen, Config.head_color, (0, mid_y),(mid_x, mid_y))  # 西
+            pg.draw.line(screen, Config.head_color, (mid_x, mid_y), (b_x, mid_y))  # 東
+            pg.draw.line(screen, Config.head_color, (mid_x, 0), (mid_x, mid_y))  # 北
+            pg.draw.line(screen, Config.head_color, (mid_x, mid_y), (mid_x, b_y))  # 南
+            pg.draw.line(screen, Config.head_color, (0, 0), (mid_x, mid_y))  # 西北
+            pg.draw.line(screen, Config.head_color, (mid_x, mid_y), (b_x, 0))  # 東北
+            pg.draw.line(screen, Config.head_color, (mid_x, mid_y), (0, b_y))  # 西南
+            pg.draw.line(screen, Config.head_color, (mid_x, mid_y), (b_x, b_y))  # 西南
     def check_wall_collision(self):
         return Config.boundary_check(self.head_pos)
     def check_body_collision(self):
@@ -198,7 +227,7 @@ class Game:
     def run(self):
         self.game_init()
         while not self.game_over:
-            time.sleep(0.2)
+            time.sleep(0.12)
             if self.snake.check_wall_collision() or self.snake.check_body_collision():
                 self.game_over = True
                 break
