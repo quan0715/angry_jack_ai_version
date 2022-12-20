@@ -155,15 +155,18 @@ class Snake:
         if draw_line:
             orientation: dict = self.head_pos.get_all_orientation()
             b_x, b_y = Config.get_map_size()
-            mid_x, mid_y = self.head_pos.x + Config.grid_width // 2, self.head_pos.y + Config.grid_width // 2
-            pg.draw.line(screen, Config.head_color, (0, mid_y),(mid_x, mid_y))  # 西
-            pg.draw.line(screen, Config.head_color, (mid_x, mid_y), (b_x, mid_y))  # 東
-            pg.draw.line(screen, Config.head_color, (mid_x, 0), (mid_x, mid_y))  # 北
-            pg.draw.line(screen, Config.head_color, (mid_x, mid_y), (mid_x, b_y))  # 南
-            pg.draw.line(screen, Config.head_color, (0, 0), (mid_x, mid_y))  # 西北
-            pg.draw.line(screen, Config.head_color, (mid_x, mid_y), (b_x, 0))  # 東北
-            pg.draw.line(screen, Config.head_color, (mid_x, mid_y), (0, b_y))  # 西南
-            pg.draw.line(screen, Config.head_color, (mid_x, mid_y), (b_x, b_y))  # 西南
+            snake_mid_point = mid_x, mid_y = self.head_pos.x + Config.grid_width // 2, self.head_pos.y + Config.grid_width // 2
+            points = [(0, mid_y), (b_x, mid_y),  (mid_x, 0), (mid_x, b_y),  (0, 0), (b_x, 0), (0, b_y), (b_x, b_y)]
+            for point in points:
+                pg.draw.line(screen, Config.line_color, snake_mid_point, point, 2)
+              # 西
+            # pg.draw.line(screen, Config.head_color, snake_mid_point, )  # 東
+            # pg.draw.line(screen, Config.head_color, snake_mid_point,)  # 北
+            # pg.draw.line(screen, Config.head_color, snake_mid_point, )  # 南
+            # pg.draw.line(screen, Config.head_color, snake_mid_point,)  # 西北
+            # pg.draw.line(screen, Config.head_color, snake_mid_point, )  # 東北
+            # pg.draw.line(screen, Config.head_color, snake_mid_point, )  # 西南
+            # pg.draw.line(screen, Config.head_color, snake_mid_point, )  # 西南
     def check_wall_collision(self):
         return Config.boundary_check(self.head_pos)
     def check_body_collision(self):
@@ -219,7 +222,7 @@ class Game:
             pg.draw.line(self.screen, Config.line_color, h_start_pos, h_send_pos, 1)
     def update_window(self):
         self.screen.fill(Config.background_color)
-        self.draw_line()
+        # self.draw_line()
         self.update_food()
         self.update_snake()
         self.background.blit(self.screen, (0, 0))
