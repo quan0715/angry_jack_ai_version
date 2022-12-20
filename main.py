@@ -231,10 +231,6 @@ class Game:
         self.game_init()
         while not self.game_over:
             time.sleep(0.12)
-            if self.snake.check_wall_collision() or self.snake.check_body_collision():
-                self.game_over = True
-                break
-
             for event in pg.event.get():
                 if event.type == QUIT:
                     pg.quit()
@@ -252,6 +248,8 @@ class Game:
                         if event.key == K_DOWN:
                             self.snake.directions.put(Direction.DOWN)
             self.update_window()
+            self.game_over = self.snake.check_wall_collision() or self.snake.check_body_collision()
+
         return self.game_over
 def main():
     game = Game()
