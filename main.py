@@ -3,19 +3,23 @@ import sys
 import pygame as pg
 import pygame.font
 from pygame.locals import *
-from game import Game, Direction
+from game import *
 
 
 class GUIConfig:
     window_weight: int = 900
     window_height: int = 600
     snake_game_display_pos: tuple = 480, 20
+    neural_screen_pos: tuple = 20, 20
     background_color = pg.Color("#000000")
     label_color = pg.Color("#FFFFFF")
     text_color = pg.Color("#FFFFFF")
     testing_color = pg.Color("#5C5C5C")
     label_size = 20
 
+
+class Node:
+    pass
 
 class VisualizeFrame:
     def __init__(self):
@@ -36,16 +40,21 @@ class VisualizeFrame:
             label_pos, text_pos = start_pos, (start_pos[0] + label.get_width(), start_pos[1])
             label_screen.blit(label, label_pos)
             label_screen.blit(text, text_pos)
-            return label.get_width() + text.get_width(), label.get_height()
+            # return label.get_width() + text.get_width(), label.get_height()
 
         label_screen = pg.Surface((400, 150))
         label_screen.fill(GUIConfig.testing_color)
         game_screen_pos = GUIConfig.snake_game_display_pos
-        label_screen_pos = game_screen_pos[0], game_screen_pos[1] + 410
+        label_screen_pos = game_screen_pos[0], game_screen_pos[1] + Config.map_max_height + 10
         generate_label("Generation", f"{0}", (5, 5))
         generate_label("Best score", f"{self.game.get_score()}", (5, GUIConfig.label_size + 5))
         generate_label("Best Fitness", f"{0}", (5, GUIConfig.label_size * 2 + 5))
         self.background.blit(label_screen, dest=label_screen_pos)
+
+    def update_neural(self):
+        neural_screen = pg.Surface((450, 560))
+        neural_screen.fill(GUIConfig.testing_color)
+        self.background.blit(neural_screen, dest=GUIConfig.neural_screen_pos)
     def build(self):
         while True:
             self.clock.tick(10)
@@ -67,6 +76,7 @@ class VisualizeFrame:
 
             self.update_game()
             self.update_label()
+            self.update_neural()
             pg.display.flip()
 
 def main():
