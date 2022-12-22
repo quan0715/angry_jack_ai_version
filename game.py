@@ -185,10 +185,13 @@ class Snake:
         return False
 
     def check_food_collision(self, food: Food):
-        if self.head_pos.get_pos() == food.pos.get_pos():
-            self.bodies.append(food.pos)
-            return True
+        for body in self.bodies:
+            if body.get_pos() == food.pos.get_pos():
+                return True
         return False
+
+    def add_body(self, pos: Position):
+        self.bodies.append(pos)
 
 
 class Game:
@@ -196,6 +199,7 @@ class Game:
         self.snake: Snake = None
         self.foods: list[Food] = []
         self.game_over: bool = False
+        self.score = 0
         self.background = None
         self.screen = None
         self.mode = mode
@@ -206,7 +210,9 @@ class Game:
         self.snake: Snake = Snake()
         self.foods: list[Food] = [Food.new_food()]
         self.game_over: bool = False
+        self.score = 0
         if self.mode == "default":
+            self.clock = pg.time.Clock()
             self.background = pg.display.set_mode(Config.get_map_size())
         self.screen = pg.Surface(Config.get_map_size())
         self.screen.fill(Config.background_color)
@@ -214,13 +220,18 @@ class Game:
     def update_food(self):
         for food in self.foods[:]:
             if self.snake.check_food_collision(food):
+                self.score += 1
+                self.snake.add_body(food.pos)
                 self.foods.remove(food)
-                self.foods.append(Food.new_food())
+                new_food = Food.new_food()
+                while self.snake.check_food_collision(new_food):
+                    new_food = Food.new_food()
+                self.foods.append(new_food)
         for food in self.foods:
             food.draw(self.screen)
 
     def update_snake(self):
-        if self.snake.directions.empty() and self.mode == "default":
+        if self.snake.directions.empty():
             self.snake.directions.put(self.snake.last_direction)
         self.snake.moving()
         self.snake.draw(self.screen)
@@ -249,6 +260,11 @@ class Game:
     def get_screen(self):
         return self.screen
 
+    def update_snake_direction(self, direction: Direction):
+        self.snake.directions.put(direction)
+
+    def get_score(self):
+        return self.score
     def run(self):
         self.game_init()
         while not self.game_over:
@@ -262,13 +278,14 @@ class Game:
                         sys.exit()
                     elif not self.game_over:
                         if event.key == K_RIGHT:
-                            self.snake.directions.put(Direction.RIGHT)
+                            self.update_snake_direction(Direction.RIGHT)
                         if event.key == K_LEFT:
-                            self.snake.directions.put(Direction.LEFT)
+                            self.update_snake_direction(Direction.LEFT)
                         if event.key == K_UP:
-                            self.snake.directions.put(Direction.UP)
+                            self.update_snake_direction(Direction.UP)
                         if event.key == K_DOWN:
-                            self.snake.directions.put(Direction.DOWN)
+                            self.update_snake_direction(Direction.DOWN)
+
             self.update_window()
             self.game_over = self.snake.check_wall_collision() or self.snake.check_body_collision()
             pg.display.flip()
@@ -279,7 +296,7 @@ class Game:
 def main():
     pg.init()
     pg.display.set_caption("Snake")
-    game = Game("")
+    game = Game()
     game.run()
 
 
