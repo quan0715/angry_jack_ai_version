@@ -16,10 +16,49 @@ class GUIConfig:
     text_color = pg.Color("#FFFFFF")
     testing_color = pg.Color("#5C5C5C")
     label_size = 20
+    first_node_pos = (20,20)
+    node_space = 1
+    layer_space = 120
+    node_not_active_color = pg.Color('#FFFFFF')
+    node_active_color = pg.Color('#79FF79')
+    node_boarder_color = pg.Color('#272727')
+    node_size = 8
+    node_num = [32,20,12,4]
+    line_not_active_color = pg.Color('#80FFFF')
+    line_active_color = pg.Color('#FF0000')
+    line_width = 1
+    
 
+
+class Layer:
+    def __init__(self,screen):
+        self.screen = screen
+    def draw(self):
+        node=Node(self.screen)
+        node.draw()
 
 class Node:
-    pass
+    def __init__(self,screen):
+        self.screen = screen
+
+    def draw(self):
+        for l in range(len(GUIConfig.node_num)):
+            upper_space = (GUIConfig.window_height-GUIConfig.first_node_pos[1]-GUIConfig.node_num[l]*(GUIConfig.node_size*2+GUIConfig.node_space))/2
+            for i in range(GUIConfig.node_num[l]):
+                pg.draw.circle(self.screen,GUIConfig.node_boarder_color,(GUIConfig.first_node_pos[0]+l*GUIConfig.layer_space,upper_space+i*(2*GUIConfig.node_size+GUIConfig.node_space)),GUIConfig.node_size)
+                pg.draw.circle(self.screen,GUIConfig.node_not_active_color,(GUIConfig.first_node_pos[0]+l*GUIConfig.layer_space,upper_space+i*(2*GUIConfig.node_size+GUIConfig.node_space)),GUIConfig.node_size-1)
+
+        for l in range(len(GUIConfig.node_num)-1):
+            upper_space_pre = (GUIConfig.window_height-GUIConfig.first_node_pos[1]-GUIConfig.node_num[l]*(GUIConfig.node_size*2+GUIConfig.node_space))/2
+            upper_space_nxt = (GUIConfig.window_height-GUIConfig.first_node_pos[1]-GUIConfig.node_num[l+1]*(GUIConfig.node_size*2+GUIConfig.node_space))/2
+            for i in range(GUIConfig.node_num[l]):
+                for j in range(GUIConfig.node_num[l+1]):
+                    pg.draw.line(self.screen,GUIConfig.line_not_active_color,(GUIConfig.first_node_pos[0]+l*GUIConfig.layer_space+GUIConfig.node_size,upper_space_pre+i*(2*GUIConfig.node_size+GUIConfig.node_space)),(GUIConfig.first_node_pos[0]+(l+1)*GUIConfig.layer_space-GUIConfig.node_size,upper_space_nxt+j*(2*GUIConfig.node_size+GUIConfig.node_space)),GUIConfig.line_width)
+        
+        decision_font = pygame.font.Font('ChivoMono-Medium.ttf', 16)
+        decision_label = [decision_font.render("U", True, (0,0,0)), decision_font.render("D", True, (0,0,0)), decision_font.render("L", True, (0,0,0)), decision_font.render("R", True, (0,0,0))]
+        for i in range(len(decision_label)):
+            self.screen.blit(decision_label[i], (GUIConfig.first_node_pos[0]+(len(GUIConfig.node_num)-1)*GUIConfig.layer_space+GUIConfig.node_size+5, upper_space+i*(2*GUIConfig.node_size+GUIConfig.node_space)-10))
 
 class VisualizeFrame:
     def __init__(self):
@@ -54,6 +93,8 @@ class VisualizeFrame:
     def update_neural(self):
         neural_screen = pg.Surface((450, 560))
         neural_screen.fill(GUIConfig.testing_color)
+        self.layer = Layer(neural_screen)
+        self.layer.draw()
         self.background.blit(neural_screen, dest=GUIConfig.neural_screen_pos)
     def build(self):
         while True:
