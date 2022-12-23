@@ -68,7 +68,6 @@ class VisualizeFrame:
         self.game.game_init()
         self.clock = pg.time.Clock()
         self.font = pygame.font.Font('ChivoMono-Medium.ttf', GUIConfig.label_size)
-
     def update_game(self):
         snake_game_screen = self.game.update_window()
         self.background.blit(snake_game_screen, dest=GUIConfig.snake_game_display_pos)
@@ -89,7 +88,6 @@ class VisualizeFrame:
         generate_label("Best score", f"{self.game.get_score()}", (5, GUIConfig.label_size + 5))
         generate_label("Best Fitness", f"{0}", (5, GUIConfig.label_size * 2 + 5))
         self.background.blit(label_screen, dest=label_screen_pos)
-
     def update_neural(self):
         neural_screen = pg.Surface((450, 560))
         neural_screen.fill(GUIConfig.testing_color)

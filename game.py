@@ -27,24 +27,16 @@ class Config:
     grid_max_width: int = map_max_width // grid_width  # Cartesian coordinate which unit equals to grid_with
     grid_max_height: int = map_max_height // grid_width
 
-    @classmethod
-    def get_map_size(cls) -> (int, int):
-        return cls.map_max_width, cls.map_max_height
+def get_map_size() -> (int, int):
+    return Config.map_max_width, Config.map_max_height
 
-    @classmethod
-    def get_grid_size(cls) -> (int, int):
-        return cls.grid_max_width, cls.grid_max_height
+def get_grid_size() -> (int, int):
+    return Config.grid_max_width, Config.grid_max_height
 
-    @classmethod
-    def random_position(cls):
-        random_x = random.randint(0, cls.grid_max_height - 1) * cls.grid_width
-        random_y = random.randint(0, cls.grid_max_width - 1) * cls.grid_width
-        return Position(random_x, random_y)
-
-    @classmethod
-    def boundary_check(cls, pos) -> bool:
-        """ 邊界檢查 """
-        return pos.x < 0 or pos.x >= cls.map_max_width or pos.y < 0 or pos.y >= cls.map_max_height
+def random_position():
+    random_x = random.randint(0, Config.grid_max_height - 1) * Config.grid_width
+    random_y = random.randint(0, Config.grid_max_width - 1) * Config.grid_width
+    return Position(random_x, random_y)
 
 
 class Position:
@@ -67,7 +59,7 @@ class Position:
         self.grid_y = self.y // Config.grid_width
 
     def get_all_orientation(self) -> dict:
-        b_x, b_y = Config.get_map_size()
+        b_x, b_y = get_map_size()
         mid_x, mid_y = self.x + Config.grid_width // 2, self.y + Config.grid_width // 2
         distance = lambda t: (t[0] ** 2 + t[1] ** 2) ** 0.5
         orientation = {
@@ -86,7 +78,7 @@ class Position:
 class Food:
     def __init__(self):
         self.food_type = "default"  # for skilled food
-        self.pos = Config.random_position()
+        self.pos = random_position()
 
     @classmethod
     def new_food(cls):
@@ -104,51 +96,32 @@ class Food:
 
 class Snake:
     def __init__(self):
-        self.head_pos: Position = Config.random_position()
+        self.head_pos: Position = random_position()
         self.bodies: [Position] = [self.head_pos]
         self.last_direction = None
         self.directions: Queue = Queue()
         self.directions.put(Direction.LEFT if self.head_pos.x > Config.map_max_height // 2 else Direction.RIGHT)
         print(f"snake generate at {self.head_pos}")
 
-    def move_up(self):
-        self.head_pos = Position(self.bodies[0].x, self.bodies[0].y - Config.grid_width)
-        self.bodies.insert(0, self.head_pos)
-        self.bodies.pop(len(self.bodies) - 1)
-        self.last_direction = Direction.UP
-
-    def move_down(self):
-        self.head_pos = Position(self.bodies[0].x, self.bodies[0].y + Config.grid_width)
-        self.bodies.insert(0, self.head_pos)
-        self.bodies.pop(len(self.bodies) - 1)
-        self.last_direction = Direction.DOWN
-
-    def move_right(self):
-        self.head_pos = Position(self.bodies[0].x + Config.grid_width, self.bodies[0].y)
-        self.bodies.insert(0, self.head_pos)
-        self.bodies.pop(len(self.bodies) - 1)
-        self.last_direction = Direction.RIGHT
-
-    def move_left(self):
-        self.head_pos = Position(self.bodies[0].x - Config.grid_width, self.bodies[0].y)
-        self.bodies.insert(0, self.head_pos)
-        self.bodies.pop(len(self.bodies) - 1)
-        self.last_direction = Direction.LEFT
-
     def moving(self):
         while not self.directions.empty():
             direction = self.directions.get()
-            # print(direction, list(self.directions.queue))
             if direction == Direction.UP and self.last_direction != Direction.DOWN:
-                self.move_up()
-            if direction == Direction.DOWN and self.last_direction != Direction.UP:
-                self.move_down()
-            if direction == Direction.LEFT and self.last_direction != Direction.RIGHT:
-                self.move_left()
-            if direction == Direction.RIGHT and self.last_direction != Direction.LEFT:
-                self.move_right()
-            self.head_pos = self.bodies[0]
-        # print(self.head_pos.get_all_orientation())
+                self.head_pos = Position(self.bodies[0].x, self.bodies[0].y - Config.grid_width)
+
+            elif direction == Direction.DOWN and self.last_direction != Direction.UP:
+                self.head_pos = Position(self.bodies[0].x, self.bodies[0].y + Config.grid_width)
+
+            elif direction == Direction.LEFT and self.last_direction != Direction.RIGHT:
+                self.head_pos = Position(self.bodies[0].x - Config.grid_width, self.bodies[0].y)
+
+            elif direction == Direction.RIGHT and self.last_direction != Direction.LEFT:
+                self.head_pos = Position(self.bodies[0].x + Config.grid_width, self.bodies[0].y)
+            else: continue
+            self.bodies.insert(0, self.head_pos)
+            self.bodies.pop(len(self.bodies) - 1)
+            self.last_direction = direction
+            # print(self.head_pos.get_all_orientation())
 
     def draw(self, screen, draw_line=True):
         # draw head (with different color)
@@ -163,7 +136,7 @@ class Snake:
         # draw 8 direction line
         if draw_line:
             orientation: dict = self.head_pos.get_all_orientation()
-            b_x, b_y = Config.get_map_size()
+            b_x, b_y = get_map_size()
             snake_mid_point = mid_x, mid_y = self.head_pos.x + Config.grid_width // 2, self.head_pos.y + Config.grid_width // 2
             points = [(0, mid_y), (b_x, mid_y), (mid_x, 0), (mid_x, b_y), (0, 0), (b_x, 0), (0, b_y), (b_x, b_y)]
             for point in points:
@@ -176,7 +149,8 @@ class Snake:
         pg.draw.line(screen, Config.food_color, snake_mid_point, food_point, 2)
 
     def check_wall_collision(self):
-        return Config.boundary_check(self.head_pos)
+        x, y = self.head_pos.get_pos()
+        return x < 0 or x >= Config.map_max_width or y < 0 or y >= Config.map_max_height
 
     def check_body_collision(self):
         for tail_pos in self.bodies[1:]:
@@ -196,7 +170,7 @@ class Snake:
 
 class Game:
     def __init__(self, mode: str= "default"):
-        self.snake: Snake = None
+        self.snake: Snake|None = None
         self.foods: list[Food] = []
         self.game_over: bool = False
         self.score = 0
@@ -213,8 +187,8 @@ class Game:
         self.score = 0
         if self.mode == "default":
             self.clock = pg.time.Clock()
-            self.background = pg.display.set_mode(Config.get_map_size())
-        self.screen = pg.Surface(Config.get_map_size())
+            self.background = pg.display.set_mode(get_map_size())
+        self.screen = pg.Surface(get_map_size())
         self.screen.fill(Config.background_color)
 
     def update_food(self):
