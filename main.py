@@ -97,8 +97,9 @@ class VisualizeFrame:
         self.layer.draw()
         self.background.blit(neural_screen, dest=GUIConfig.neural_screen_pos)
     def build(self):
+        counter=0
         while True:
-            self.clock.tick(10)
+            self.clock.tick(100)
             for event in pg.event.get():
                 if event.type == QUIT:
                     pg.quit()
@@ -114,7 +115,8 @@ class VisualizeFrame:
                         self.game.update_snake_direction(Direction.UP)
                     if event.key == K_DOWN:
                         self.game.update_snake_direction(Direction.DOWN)
-
+            counter=(counter+1)%10
+            if counter: continue
             self.update_game()
             self.update_label()
             self.update_neural()
