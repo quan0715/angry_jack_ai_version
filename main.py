@@ -1,5 +1,7 @@
 import time
 import sys
+from typing import List
+
 import pygame as pg
 import pygame.font
 from pygame.locals import *
@@ -35,6 +37,30 @@ class Node:
         decision_label = [decision_font.render("U", True, (0,0,0)), decision_font.render("D", True, (0,0,0)), decision_font.render("L", True, (0,0,0)), decision_font.render("R", True, (0,0,0))]
         for i in range(len(decision_label)):
             self.screen.blit(decision_label[i], (GUIConfig.first_node_pos[0]+(len(GUIConfig.node_num)-1)*GUIConfig.layer_space+GUIConfig.node_size+5, upper_space+i*(2*GUIConfig.node_size+GUIConfig.node_space)-10))
+
+
+
+class NodeWidget:
+    def __init__(self, center_pos: Point, status= False):
+        self.center_pos = center_pos # center
+        self.status = status
+        self.color = GUIConfig.node_active_color if self.status else GUIConfig.node_not_active_color
+    def update_status(self, status: bool):
+        self.status = status
+        self.color = GUIConfig.node_active_color if self.status else GUIConfig.node_not_active_color
+    def draw(self, screen: pg.Surface):
+        border_color = GUIConfig.node_boarder_color
+        node_size = GUIConfig.node_size
+        pg.draw.circle(screen, border_color, self.center_pos.get_point(), node_size) # border
+        pg.draw.circle(screen, self.color, self.center_pos.get_point(), node_size - 1) # inside
+
+class LayerWidget:
+    def __init__(self, start_pos: Point, nodes_num: int):
+        self.nodes = []
+    def draw(self, screen: pg.Surface):
+        for node in self.nodes:
+            node.draw(screen)
+
 
 class VisualizeFrame:
     def __init__(self):

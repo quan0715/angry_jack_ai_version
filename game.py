@@ -58,12 +58,9 @@ class Game:
         self.fruit.draw(self.screen)
 
     def update_snake(self):
-        # if self.snake.directions.empty():
-        #     self.snake.directions.put(self.snake.last_direction)
         self.snake.moving()
         self.snake.draw(self.screen)
-        self.snake.draw_food_line(self.screen, self.fruit)
-        print(self.snake.get_feature(self.fruit))
+        self.snake.get_feature(self.fruit)
 
     def draw_line(self):
         for index in range(GameConfig.grid_max_width):
