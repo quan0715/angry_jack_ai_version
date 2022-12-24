@@ -27,11 +27,13 @@ class Config:
     grid_max_width: int = map_max_width // grid_width  # Cartesian coordinate which unit equals to grid_with
     grid_max_height: int = map_max_height // grid_width
 
-def get_map_size() -> (int, int):
+
+def get_map_size() -> tuple[int, int]:
     return Config.map_max_width, Config.map_max_height
 
-def get_grid_size() -> (int, int):
+def get_grid_size() -> tuple[int, int]:
     return Config.grid_max_width, Config.grid_max_height
+
 
 def random_position():
     random_x = random.randint(0, Config.grid_max_height - 1) * Config.grid_width
@@ -97,7 +99,7 @@ class Food:
 class Snake:
     def __init__(self):
         self.head_pos: Position = random_position()
-        self.bodies: [Position] = [self.head_pos]
+        self.bodies: list[Position] = [self.head_pos]
         self.last_direction = None
         self.directions: Queue = Queue()
         self.directions.put(Direction.LEFT if self.head_pos.x > Config.map_max_height // 2 else Direction.RIGHT)
