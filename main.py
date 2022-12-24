@@ -4,31 +4,7 @@ import pygame as pg
 import pygame.font
 from pygame.locals import *
 from game import *
-
-
-class GUIConfig:
-    window_weight: int = 900
-    window_height: int = 600
-    snake_game_display_pos: tuple = 480, 20
-    neural_screen_pos: tuple = 20, 20
-    background_color = pg.Color("#000000")
-    label_color = pg.Color("#FFFFFF")
-    text_color = pg.Color("#FFFFFF")
-    testing_color = pg.Color("#5C5C5C")
-    label_size = 20
-    first_node_pos = (20,20)
-    node_space = 1
-    layer_space = 120
-    node_not_active_color = pg.Color('#FFFFFF')
-    node_active_color = pg.Color('#79FF79')
-    node_boarder_color = pg.Color('#272727')
-    node_size = 8
-    node_num = [32,20,12,4]
-    line_not_active_color = pg.Color('#80FFFF')
-    line_active_color = pg.Color('#FF0000')
-    line_width = 1
-    
-
+from setting import *
 
 class Layer:
     def __init__(self,screen):
@@ -83,7 +59,7 @@ class VisualizeFrame:
         label_screen = pg.Surface((400, 150))
         label_screen.fill(GUIConfig.testing_color)
         game_screen_pos = GUIConfig.snake_game_display_pos
-        label_screen_pos = game_screen_pos[0], game_screen_pos[1] + Config.map_max_height + 10
+        label_screen_pos = game_screen_pos[0], game_screen_pos[1] + GameConfig.map_max_height + 10
         generate_label("Generation", f"{0}", (5, 5))
         generate_label("Best score", f"{self.game.get_score()}", (5, GUIConfig.label_size + 5))
         generate_label("Best Fitness", f"{0}", (5, GUIConfig.label_size * 2 + 5))
