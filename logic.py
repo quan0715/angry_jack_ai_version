@@ -58,7 +58,7 @@ class Snake():
         return False
 
 
-class Food():
+class Food:
     def __init__(self,cellWidthNum,cellHeightNum,snake1,snake2):
         self.snake1=snake1
         self.snake2=snake2
@@ -74,7 +74,7 @@ class Food():
         self.position['x']=x
         self.position['y']=y
 
-class Boarder():
+class Boarder:
     def __init__(self,boarderWidth,boarderHeight,cellLength):
         self.boarderWidth=boarderWidth
         self.boarderHeight=boarderHeight
