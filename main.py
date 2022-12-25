@@ -24,8 +24,8 @@ class NeuralVisualize:
         for layer,num_nodes in enumerate(layer_nodes):
             upper_space = (info.window_height-first_posY-layer_nodes[layer]*(radius*2+node_space))/2
             for i in range(num_nodes):
-                pg.draw.circle(self.screen,info.node_boarder_color,(first_posX+layer*layer_space,upper_space+i*(2*radius+node_space)),radius)
-                pg.draw.circle(self.screen,info.node_not_active_color,(first_posX+layer*layer_space,upper_space+i*(2*radius+node_space)),radius-1)
+                node = NodeWidget(Point(first_posX+layer*layer_space, upper_space+i*(2*radius+node_space)))
+                node.draw(self.screen)
         # draw line
         for l in range(1, len(layer_nodes)):
             pre_layer_num_nodes = layer_nodes[l-1]
