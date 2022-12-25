@@ -13,31 +13,31 @@ class NeuralVisualize:
         self.screen = screen
         
     def draw(self):
-        info = GUIConfig()
-        node_space = info.node_space
-        layer_space = info.layer_space
-        radius = info.node_size
-        first_posX = info.first_node_pos[0]
-        first_posY = info.first_node_pos[1]
-        layer_nodes = info.layer_nodes
+        node_space = GUIConfig.node_space
+        layer_space = GUIConfig.layer_space
+        radius = GUIConfig.node_size
+        first_posX = GUIConfig.first_node_pos[0]
+        first_posY = GUIConfig.first_node_pos[1]
+        layer_nodes = GUIConfig.layer_nodes
+        
         # draw node
-        for layer,num_nodes in enumerate(layer_nodes):
-            upper_space = (info.window_height-first_posY-layer_nodes[layer]*(radius*2+node_space))/2
-            for i in range(num_nodes):
-                node = NodeWidget(Point(first_posX+layer*layer_space, upper_space+i*(2*radius+node_space)))
-                node.draw(self.screen)
+        for layer, node_num in enumerate(GUIConfig.layer_nodes):
+            lw = LayerWidget(layer)
+            lw.draw(self.screen)
         # draw line
         for l in range(1, len(layer_nodes)):
             pre_layer_num_nodes = layer_nodes[l-1]
             cur_layer_num_nodes = layer_nodes[l]
-            upper_space_pre = (info.window_height-first_posY-pre_layer_num_nodes*(radius*2+node_space))/2
-            upper_space_nxt = (info.window_height-first_posY-cur_layer_num_nodes*(radius*2+node_space))/2
+            upper_space_pre = (GUIConfig.window_height-first_posY-pre_layer_num_nodes*(radius*2+node_space))/2
+            upper_space_nxt = (GUIConfig.window_height-first_posY-cur_layer_num_nodes*(radius*2+node_space))/2
             for i in range(pre_layer_num_nodes):
                 line_start = (first_posX+(l-1)*layer_space+radius,upper_space_pre+i*(2*radius+node_space))
                 for j in range(cur_layer_num_nodes):
                     line_end = (first_posX+l*layer_space-radius,upper_space_nxt+j*(2*radius+node_space))
-                    pg.draw.line(self.screen,info.line_not_active_color, line_start, line_end, info.line_width)
+                    pg.draw.line(self.screen,GUIConfig.line_not_active_color, line_start, line_end, GUIConfig.line_width)
+
         # draw label
+        upper_space = (GUIConfig.window_height-first_posY-layer_nodes[len(layer_nodes)-1]*(radius*2+node_space))/2
         decision_font = pygame.font.Font('ChivoMono-Medium.ttf', 16)
         decision_label = [decision_font.render("U", True, (0,0,0)),
                             decision_font.render("D", True, (0,0,0)),
@@ -61,8 +61,15 @@ class NodeWidget:
         pg.draw.circle(screen, self.color, self.center_pos.get_point(), node_size - 1) # inside
 
 class LayerWidget:
-    def __init__(self, start_pos: Point, nodes_num: int):
-        self.nodes = []
+    def __init__(self, layer: int):
+        first_posX = GUIConfig.first_node_pos[0]
+        first_posY = GUIConfig.first_node_pos[1]
+        layer_nodes = GUIConfig.layer_nodes
+        radius = GUIConfig.node_size
+        node_space = GUIConfig.node_space
+        layer_space = GUIConfig.layer_space
+        upper_space = (GUIConfig.window_height-first_posY-layer_nodes[layer]*(radius*2+node_space))/2
+        self.nodes = [NodeWidget(Point(first_posX+layer*layer_space, upper_space+i*(2*radius+node_space))) for i in range(layer_nodes[layer])]
     def draw(self, screen: pg.Surface):
         for node in self.nodes:
             node.draw(screen)
