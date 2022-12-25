@@ -8,37 +8,43 @@ from pygame.locals import *
 from game import *
 from setting import *
 
-class Layer:
+class NeuralVisualize:
     def __init__(self,screen):
         self.screen = screen
-    def draw(self):
-        node=Node(self.screen)
-        node.draw()
-
-class Node:
-    def __init__(self,screen):
-        self.screen = screen
-
-    def draw(self):
-        for l in range(len(GUIConfig.node_num)):
-            upper_space = (GUIConfig.window_height-GUIConfig.first_node_pos[1]-GUIConfig.node_num[l]*(GUIConfig.node_size*2+GUIConfig.node_space))/2
-            for i in range(GUIConfig.node_num[l]):
-                pg.draw.circle(self.screen,GUIConfig.node_boarder_color,(GUIConfig.first_node_pos[0]+l*GUIConfig.layer_space,upper_space+i*(2*GUIConfig.node_size+GUIConfig.node_space)),GUIConfig.node_size)
-                pg.draw.circle(self.screen,GUIConfig.node_not_active_color,(GUIConfig.first_node_pos[0]+l*GUIConfig.layer_space,upper_space+i*(2*GUIConfig.node_size+GUIConfig.node_space)),GUIConfig.node_size-1)
-
-        for l in range(len(GUIConfig.node_num)-1):
-            upper_space_pre = (GUIConfig.window_height-GUIConfig.first_node_pos[1]-GUIConfig.node_num[l]*(GUIConfig.node_size*2+GUIConfig.node_space))/2
-            upper_space_nxt = (GUIConfig.window_height-GUIConfig.first_node_pos[1]-GUIConfig.node_num[l+1]*(GUIConfig.node_size*2+GUIConfig.node_space))/2
-            for i in range(GUIConfig.node_num[l]):
-                for j in range(GUIConfig.node_num[l+1]):
-                    pg.draw.line(self.screen,GUIConfig.line_not_active_color,(GUIConfig.first_node_pos[0]+l*GUIConfig.layer_space+GUIConfig.node_size,upper_space_pre+i*(2*GUIConfig.node_size+GUIConfig.node_space)),(GUIConfig.first_node_pos[0]+(l+1)*GUIConfig.layer_space-GUIConfig.node_size,upper_space_nxt+j*(2*GUIConfig.node_size+GUIConfig.node_space)),GUIConfig.line_width)
         
+    def draw(self):
+        info = GUIConfig()
+        node_space = info.node_space
+        layer_space = info.layer_space
+        radius = info.node_size
+        first_posX = info.first_node_pos[0]
+        first_posY = info.first_node_pos[1]
+        layer_nodes = info.layer_nodes
+        # draw node
+        for layer,num_nodes in enumerate(layer_nodes):
+            upper_space = (info.window_height-first_posY-layer_nodes[layer]*(radius*2+node_space))/2
+            for i in range(num_nodes):
+                pg.draw.circle(self.screen,info.node_boarder_color,(first_posX+layer*layer_space,upper_space+i*(2*radius+node_space)),radius)
+                pg.draw.circle(self.screen,info.node_not_active_color,(first_posX+layer*layer_space,upper_space+i*(2*radius+node_space)),radius-1)
+        # draw line
+        for l in range(1, len(layer_nodes)):
+            pre_layer_num_nodes = layer_nodes[l-1]
+            cur_layer_num_nodes = layer_nodes[l]
+            upper_space_pre = (info.window_height-first_posY-pre_layer_num_nodes*(radius*2+node_space))/2
+            upper_space_nxt = (info.window_height-first_posY-cur_layer_num_nodes*(radius*2+node_space))/2
+            for i in range(pre_layer_num_nodes):
+                line_start = (first_posX+(l-1)*layer_space+radius,upper_space_pre+i*(2*radius+node_space))
+                for j in range(cur_layer_num_nodes):
+                    line_end = (first_posX+l*layer_space-radius,upper_space_nxt+j*(2*radius+node_space))
+                    pg.draw.line(self.screen,info.line_not_active_color, line_start, line_end, info.line_width)
+        # draw label
         decision_font = pygame.font.Font('ChivoMono-Medium.ttf', 16)
-        decision_label = [decision_font.render("U", True, (0,0,0)), decision_font.render("D", True, (0,0,0)), decision_font.render("L", True, (0,0,0)), decision_font.render("R", True, (0,0,0))]
+        decision_label = [decision_font.render("U", True, (0,0,0)),
+                            decision_font.render("D", True, (0,0,0)),
+                            decision_font.render("L", True, (0,0,0)),
+                            decision_font.render("R", True, (0,0,0))]
         for i in range(len(decision_label)):
-            self.screen.blit(decision_label[i], (GUIConfig.first_node_pos[0]+(len(GUIConfig.node_num)-1)*GUIConfig.layer_space+GUIConfig.node_size+5, upper_space+i*(2*GUIConfig.node_size+GUIConfig.node_space)-10))
-
-
+            self.screen.blit(decision_label[i], (first_posX+(len(layer_nodes)-1)*layer_space+radius+5, upper_space+i*(2*radius+node_space)-10))
 
 class NodeWidget:
     def __init__(self, center_pos: Point, status= False):
@@ -93,8 +99,8 @@ class VisualizeFrame:
     def update_neural(self):
         neural_screen = pg.Surface((450, 560))
         neural_screen.fill(GUIConfig.testing_color)
-        self.layer = Layer(neural_screen)
-        self.layer.draw()
+        self.neural_vis = NeuralVisualize(neural_screen)
+        self.neural_vis.draw()
         self.background.blit(neural_screen, dest=GUIConfig.neural_screen_pos)
     def build(self):
         counter=0

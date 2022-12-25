@@ -28,7 +28,7 @@ class GUIConfig:
     node_active_color = Color('#79FF79')
     node_boarder_color = Color('#272727')
     node_size = 8
-    node_num = [32, 20, 12, 4]
+    layer_nodes = [32, 20, 12, 4]
     line_not_active_color = Color('#80FFFF')
     line_active_color = Color('#FF0000')
     line_width = 1
