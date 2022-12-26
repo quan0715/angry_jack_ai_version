@@ -12,8 +12,10 @@ class GameConfig:
     grid_max_height: int = map_max_height // grid_width
 
 class GUIConfig:
-    window_weight: int = 900
+    window_width: int = 900
     window_height: int = 600
+    network_window_width: int = 450
+    network_window_height: int = 560
     snake_game_display_pos: tuple = 480, 20
     neural_screen_pos: tuple = 20, 20
     background_color = Color("#000000")
@@ -28,10 +30,12 @@ class GUIConfig:
     node_active_color = Color('#79FF79')
     node_boarder_color = Color('#272727')
     node_size = 8
-    layer_nodes = [32, 20, 12, 4]
     line_not_active_color = Color('#80FFFF')
     line_active_color = Color('#FF0000')
     line_width = 1
 
 class NetworkConfig:
-    pass
+    input_layer_num = 32
+    output_layer_num = 4
+    hidden_layers_num = [20, 12]
+    # layer_nodes = [32, 20, 12, 4]

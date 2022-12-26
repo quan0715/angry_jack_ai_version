@@ -38,13 +38,13 @@ class Snake:
         if len(self.bodies) >= 2:
             diff_x, diff_y = (self.bodies[-1] - self.bodies[-2]).get_point()
             if diff_x == 0 and diff_y < 0:
-                self.tail_direction = Direction.UP
-            elif diff_x == 0 and diff_y > 0:
                 self.tail_direction = Direction.DOWN
+            elif diff_x == 0 and diff_y > 0:
+                self.tail_direction = Direction.UP
             elif diff_y == 0 and diff_x > 0:
-                self.tail_direction = Direction.RIGHT
-            elif diff_y == 0 and diff_x < 0 :
                 self.tail_direction = Direction.LEFT
+            elif diff_y == 0 and diff_x < 0 :
+                self.tail_direction = Direction.RIGHT
         else: self.tail_direction = self.last_direction
     def draw(self, screen, draw_line=True):
         # draw head (with different color)
@@ -96,7 +96,7 @@ class Snake:
         # 8 vision
         snake_point = self.head_pos
         for direction, vision in eight_vision.items():
-            vision_feature = {"self_to_wall": -1, "self_to_food": -1, "self_to_self": -1}
+            vision_feature = {"self_to_wall": 0, "self_to_food": 0, "self_to_self": 0}
             start_point = Point(*snake_point.get_point())
             while not self._point_in_wall(start_point):
                 start_point.x += vision['x_added'] * GameConfig.grid_width
@@ -117,7 +117,8 @@ class Snake:
         # tail direction in one hot encoding
         tail_direction = [0, 0, 0, 0]
         tail_direction[direction_map[self.tail_direction]['index']] = 1
+        #print(self.last_direction, self.tail_direction)
         feature_list.extend(tail_direction)
         feature = np.array(feature_list)
-        print(feature)
+        #print(feature)
         return feature

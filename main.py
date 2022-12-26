@@ -5,79 +5,12 @@ from typing import List
 import pygame as pg
 import pygame.font
 from pygame.locals import *
+from neural_visualization import *
 from game import *
 from setting import *
-
-class NeuralVisualize:
-    def __init__(self,screen):
-        self.screen = screen
-        
-    def draw(self):
-        node_space = GUIConfig.node_space
-        layer_space = GUIConfig.layer_space
-        radius = GUIConfig.node_size
-        first_posX = GUIConfig.first_node_pos[0]
-        first_posY = GUIConfig.first_node_pos[1]
-        layer_nodes = GUIConfig.layer_nodes
-        
-        # draw node
-        for layer, node_num in enumerate(GUIConfig.layer_nodes):
-            lw = LayerWidget(layer)
-            lw.draw(self.screen)
-        # draw line
-        for l in range(1, len(layer_nodes)):
-            pre_layer_num_nodes = layer_nodes[l-1]
-            cur_layer_num_nodes = layer_nodes[l]
-            upper_space_pre = (GUIConfig.window_height-first_posY-pre_layer_num_nodes*(radius*2+node_space))/2
-            upper_space_nxt = (GUIConfig.window_height-first_posY-cur_layer_num_nodes*(radius*2+node_space))/2
-            for i in range(pre_layer_num_nodes):
-                line_start = (first_posX+(l-1)*layer_space+radius,upper_space_pre+i*(2*radius+node_space))
-                for j in range(cur_layer_num_nodes):
-                    line_end = (first_posX+l*layer_space-radius,upper_space_nxt+j*(2*radius+node_space))
-                    pg.draw.line(self.screen,GUIConfig.line_not_active_color, line_start, line_end, GUIConfig.line_width)
-
-        # draw label
-        upper_space = (GUIConfig.window_height-first_posY-layer_nodes[len(layer_nodes)-1]*(radius*2+node_space))/2
-        decision_font = pygame.font.Font('ChivoMono-Medium.ttf', 16)
-        decision_label = [decision_font.render("U", True, (0,0,0)),
-                            decision_font.render("D", True, (0,0,0)),
-                            decision_font.render("L", True, (0,0,0)),
-                            decision_font.render("R", True, (0,0,0))]
-        for i in range(len(decision_label)):
-            self.screen.blit(decision_label[i], (first_posX+(len(layer_nodes)-1)*layer_space+radius+5, upper_space+i*(2*radius+node_space)-10))
-
-class NodeWidget:
-    def __init__(self, center_pos: Point, status= False):
-        self.center_pos = center_pos # center
-        self.status = status
-        self.color = GUIConfig.node_active_color if self.status else GUIConfig.node_not_active_color
-    def update_status(self, status: bool):
-        self.status = status
-        self.color = GUIConfig.node_active_color if self.status else GUIConfig.node_not_active_color
-    def draw(self, screen: pg.Surface):
-        border_color = GUIConfig.node_boarder_color
-        node_size = GUIConfig.node_size
-        pg.draw.circle(screen, border_color, self.center_pos.get_point(), node_size) # border
-        pg.draw.circle(screen, self.color, self.center_pos.get_point(), node_size - 1) # inside
-
-class LayerWidget:
-    def __init__(self, layer: int):
-        first_posX = GUIConfig.first_node_pos[0]
-        first_posY = GUIConfig.first_node_pos[1]
-        layer_nodes = GUIConfig.layer_nodes
-        radius = GUIConfig.node_size
-        node_space = GUIConfig.node_space
-        layer_space = GUIConfig.layer_space
-        upper_space = (GUIConfig.window_height-first_posY-layer_nodes[layer]*(radius*2+node_space))/2
-        self.nodes = [NodeWidget(Point(first_posX+layer*layer_space, upper_space+i*(2*radius+node_space))) for i in range(layer_nodes[layer])]
-    def draw(self, screen: pg.Surface):
-        for node in self.nodes:
-            node.draw(screen)
-
-
 class VisualizeFrame:
     def __init__(self):
-        self.background = pg.display.set_mode((GUIConfig.window_weight, GUIConfig.window_height))
+        self.background = pg.display.set_mode((GUIConfig.window_width, GUIConfig.window_height))
         self.background.fill(GUIConfig.background_color)
         self.game = Game("train")
         self.game.game_init()
@@ -104,10 +37,13 @@ class VisualizeFrame:
         generate_label("Best Fitness", f"{0}", (5, GUIConfig.label_size * 2 + 5))
         self.background.blit(label_screen, dest=label_screen_pos)
     def update_neural(self):
-        neural_screen = pg.Surface((450, 560))
+        neural_screen = pg.Surface((GUIConfig.network_window_width, GUIConfig.network_window_height))
         neural_screen.fill(GUIConfig.testing_color)
-        self.neural_vis = NeuralVisualize(neural_screen)
-        self.neural_vis.draw()
+        self.neural_vis = NeuralVisualize()
+        snake_feature = self.game.snake.get_feature(self.game.fruit)
+        snake_feature = [bool(f) for f in snake_feature]
+        # print(snake_feature)
+        self.neural_vis.draw(neural_screen, [snake_feature])
         self.background.blit(neural_screen, dest=GUIConfig.neural_screen_pos)
     def build(self):
         counter=0
