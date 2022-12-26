@@ -16,14 +16,14 @@ class GUIConfig:
     window_height: int = 600
     network_window_width: int = 450
     network_window_height: int = 560
-    snake_game_display_pos: tuple = 480, 20
-    neural_screen_pos: tuple = 20, 20
+    snake_game_display_pos = (480, 20)
+    neural_screen_pos = (20, 20)
     background_color = Color("#000000")
     label_color = Color("#FFFFFF")
     text_color = Color("#FFFFFF")
     testing_color = Color("#5C5C5C")
     label_size = 20
-    first_node_pos = (20, 20)
+    first_node_pos = (10, 10)
     node_space = 1
     layer_space = 120
     node_not_active_color = Color('#FFFFFF')
@@ -35,7 +35,4 @@ class GUIConfig:
     line_width = 1
 
 class NetworkConfig:
-    input_layer_num = 32
-    output_layer_num = 4
-    hidden_layers_num = [20, 12]
-    # layer_nodes = [32, 20, 12, 4]
+    layers_node_num = [32, 20, 12, 4]
