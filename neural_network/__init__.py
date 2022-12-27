@@ -1,14 +1,9 @@
 from typing import List
 from enum import Enum
-import numpy as np
+from .FFN import FFN
+from .Dense import Dense
 
-try:
-    from .FFN import *
-    from .FFN import FFN
-    from .Dense import *
-except:
-    from FFN import *
-    from Dense import *
+import numpy as np
 
 
 __all__ = ['FFN', 'Dense', 'create_model', 'get_direction', 'init_from_chromosome']
@@ -49,7 +44,7 @@ def get_direction(model: FFN, feature: np.ndarray) -> Direction:
         raise Exception('error on getdirection, res=', res)
 
 
-def init_from_chromosome(model: FFN, chromosome: List[np.ndarray[np.ndarray]]):
+def init_from_chromosome(model: FFN, chromosome: List[np.ndarray]):
     for i, layer in enumerate(chromosome):
         w, bias = layer[:, 1:], layer[:, 0:1]
         model.set_weight_and_bias(i, modifiedW=w, modifiedB=bias)

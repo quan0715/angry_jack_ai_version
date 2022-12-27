@@ -1,15 +1,9 @@
 from __future__ import annotations
-
 from typing import Optional
+from neural_network import FFN
+from .activation_func import get_activation_function
 
 import numpy as np
-
-try:
-    from .FFN import FFN
-    from .activation_func import get_activation_function
-except:
-    from FFN import FFN
-    from activation_func import get_activation_function
 
 __all__ = ['Dense']
 

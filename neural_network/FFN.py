@@ -1,12 +1,7 @@
 import numpy as np
 
-from typing import TYPE_CHECKING, Dict, List, Tuple
-
-if TYPE_CHECKING:
-    try:
-        from .Dense import Dense
-    except:
-        from Dense import Dense
+from typing import Dict, List, Tuple, Optional
+from neural_network import Dense
 
 __all__ = ['FFN']
 
@@ -62,8 +57,8 @@ class FFN:
 
     def set_weight_and_bias(self,
                             layer_idx: int,
-                            modifiedW: np.ndarray | None = None,
-                            modifiedB: np.ndarray | None = None):
+                            modifiedW: Optional[np.ndarray] = None,
+                            modifiedB: Optional[np.ndarray] = None):
         if modifiedW is not None:
             if self._layers[layer_idx]._W.shape == modifiedW.shape:
                 self._layers[layer_idx]._W = modifiedW.copy()
