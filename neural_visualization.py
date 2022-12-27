@@ -1,10 +1,12 @@
 from typing import List
 import numpy as np
 from setting import *
-from misc import  *
+from misc import *
 import pygame as pg
+
+
 class NeuralVisualize:
-    def __init__(self, layers_node_num: List[int]= NetworkConfig.layers_node_num):
+    def __init__(self, layers_node_num: List[int] = NetworkConfig.layers_node_num):
         self.layers_node_num = layers_node_num
         self.start_x = GUIConfig.neural_screen_pos[0]
         self.layer_space = (GUIConfig.network_window_size[0] - 2 * self.start_x) / (len(self.layers_node_num) - 1)
@@ -26,14 +28,14 @@ class NeuralVisualize:
         for label, node in zip(decision_label, self.layers[-1].nodes):
             node_pos_x, node_pos_y = node.center_pos.get_point()
             screen.blit(label, (node_pos_x + 10, node_pos_y - 10))
+
     def draw(self, screen):
         for idx in range(len(self.layers_node_num)):
             if idx != len(self.layers_node_num) - 1:
-                self.layers[idx].connect_with_layer(self.layers[idx+1], screen)
+                self.layers[idx].connect_with_layer(self.layers[idx + 1], screen)
             self.layers[idx].draw(screen)
 
         self._draw_output_layer_label(screen)
-
 
 
 class LayerWidget:
@@ -41,8 +43,10 @@ class LayerWidget:
         self.start_x = start_x
         self.node_number = node_number
         space_of_each_node = 2 * GUIConfig.node_size + GUIConfig.node_space
-        self.start_y = (GUIConfig.neural_screen_pos[1] + GUIConfig.network_window_size[1] - self.node_number * space_of_each_node - GUIConfig.node_space) / 2
-        self.nodes = [NodeWidget(Point(self.start_x, self.start_y + idx * space_of_each_node)) for idx in range(node_number)]
+        self.start_y = (GUIConfig.neural_screen_pos[1] + GUIConfig.network_window_size[
+            1] - self.node_number * space_of_each_node - GUIConfig.node_space) / 2
+        self.nodes = [NodeWidget(Point(self.start_x, self.start_y + idx * space_of_each_node)) for idx in
+                      range(node_number)]
 
     def connect_with_layer(self, target_layer, screen):
         for node in self.nodes:
@@ -59,6 +63,7 @@ class LayerWidget:
         for node in self.nodes:
             node.draw(screen)
 
+
 class NodeWidget:
     def __init__(self, center_pos: Point, status=False):
         self.center_pos: Point = center_pos  # center
@@ -73,9 +78,9 @@ class NodeWidget:
         self.line_color = GUIConfig.line_active_color if self.status else GUIConfig.line_not_active_color
 
     def connect_with_line(self, target_node: 'NodeWidget', screen):
-        pg.draw.line(screen, self.line_color, self.center_pos.get_point(), target_node.center_pos.get_point(), GUIConfig.line_width)
+        pg.draw.line(screen, self.line_color, self.center_pos.get_point(), target_node.center_pos.get_point(),
+                     GUIConfig.line_width)
 
     def draw(self, screen: pg.Surface):
         pg.draw.circle(screen, GUIConfig.node_boarder_color, self.center_pos.get_point(), GUIConfig.node_size)  # border
         pg.draw.circle(screen, self.node_color, self.center_pos.get_point(), GUIConfig.node_size - 1)  # inside
-

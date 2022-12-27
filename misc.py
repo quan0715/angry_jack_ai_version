@@ -2,21 +2,28 @@ from setting import GameConfig
 from typing import Union, Tuple
 import random
 from enum import Enum
-def get_map_size() -> tuple[int, int]:
+
+
+def get_map_size() -> Tuple[int, int]:
     return GameConfig.map_max_width, GameConfig.map_max_height
 
-def get_grid_size() -> tuple[int, int]:
+
+def get_grid_size() -> Tuple[int, int]:
     return GameConfig.grid_max_width, GameConfig.grid_max_height
+
 
 def random_position():
     random_x = random.randint(0, GameConfig.grid_max_height - 1) * GameConfig.grid_width
     random_y = random.randint(0, GameConfig.grid_max_width - 1) * GameConfig.grid_width
     return Point(random_x, random_y)
 
+
 class Point:
     def __init__(self, x: int, y: int):
         self.x = x
         self.y = y
+        self.grid_x = self.x // GameConfig.grid_width
+        self.grid_y = self.y // GameConfig.grid_width
 
     def get_point(self) -> tuple:
         return self.x, self.y,
@@ -55,11 +62,13 @@ class Point:
     def __repr__(self):
         return f"position (x: {self.x},y: {self.y})"
 
+
 class Direction(Enum):
     UP = "UP"
     DOWN = "DOWN"
     LEFT = "LEFT"
     RIGHT = "RIGHT"
+
 
 direction_map = {
     Direction.UP: {'check': Direction.DOWN, "x_added": 0, "y_added": -1, "index": 0},
@@ -70,12 +79,12 @@ direction_map = {
 
 # self.x * c0 + width * c1 , self.y*c2 + height * c3
 eight_vision = {
-    "E" : {"x_added": 1, "y_added": 0},
-    "S" : {"x_added": 0, "y_added": 1},
-    "W" : {"x_added": -1, "y_added": 0},
-    "N" : {"x_added": 0, "y_added": -1},
-    "ES" : {"x_added": 1, "y_added": 1},
-    "EN" : {"x_added": 1, "y_added": -1},
-    "WS" : {"x_added": -1, "y_added": 1},
-    "WN" : {"x_added": -1, "y_added": -1},
+    "E": {"x_added": 1, "y_added": 0},
+    "S": {"x_added": 0, "y_added": 1},
+    "W": {"x_added": -1, "y_added": 0},
+    "N": {"x_added": 0, "y_added": -1},
+    "ES": {"x_added": 1, "y_added": 1},
+    "EN": {"x_added": 1, "y_added": -1},
+    "WS": {"x_added": -1, "y_added": 1},
+    "WN": {"x_added": -1, "y_added": -1},
 }

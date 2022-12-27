@@ -1,17 +1,30 @@
+from typing import List, Optional
+from neural_network import FFN
 from misc import *
 from queue import Queue
+from genetic_algorithm.individual import Individual
 import numpy as np
 import pygame as pg
 
-class Snake:
+
+class Snake(Individual):
     def __init__(self):
+        super().__init__()
         self.head_pos: Point = random_position()
-        self.bodies: list[Point] = [self.head_pos]
+        self.bodies: List[Point] = [self.head_pos]
         self.last_direction = None
         self.tail_direction = None
         self.directions: Queue = Queue()
         self.directions.put(Direction.LEFT if self.head_pos.x > GameConfig.map_max_height // 2 else Direction.RIGHT)
+
+        # genetic algorithm stuff
+        self.score = 0  # Number of apples snake gets
+        self.network: Optional[FFN] = None
+        self._fitness = 0
+        self._frames = 0
+
         print(f"snake generate at {self.head_pos}")
+
     def moving(self):
         move_flag = False
         while not self.directions.empty() and not move_flag:
@@ -43,9 +56,11 @@ class Snake:
                 self.tail_direction = Direction.UP
             elif diff_y == 0 and diff_x > 0:
                 self.tail_direction = Direction.LEFT
-            elif diff_y == 0 and diff_x < 0 :
+            elif diff_y == 0 and diff_x < 0:
                 self.tail_direction = Direction.RIGHT
-        else: self.tail_direction = self.last_direction
+        else:
+            self.tail_direction = self.last_direction
+
     def draw(self, screen, draw_line=True):
         # draw head (with different color)
         h_x, h_y = self.head_pos.get_point()
@@ -69,28 +84,39 @@ class Snake:
                     init_point.x += b['x_added']
                     init_point.y += b['y_added']
                 pg.draw.line(screen, GameConfig.line_color, snake_mid_point, init_point.get_point(), 2)
+
     def draw_food_line(self, screen, food):
         food_point = food.pos.get_point()
         food_point = (food_point[0] + GameConfig.grid_width // 2, food_point[1] + GameConfig.grid_width // 2)
         snake_mid_point = self.head_pos.x + GameConfig.grid_width // 2, self.head_pos.y + GameConfig.grid_width // 2
         pg.draw.line(screen, GameConfig.food_color, snake_mid_point, food_point, 2)
+
     def check_wall_collision(self):
         x, y = self.head_pos.get_point()
         return x < 0 or x >= GameConfig.map_max_width or y < 0 or y >= GameConfig.map_max_height
+
     def check_body_collision(self):
         return self.head_pos in self.bodies[1:]
+
     def check_food_collision(self, food):
         return food.pos in self.bodies
 
     def _point_in_wall(self, point: Point) -> bool:
-        x, y =  point.get_point()
+        x, y = point.get_point()
         return x < 0 or x >= GameConfig.map_max_width or y < 0 or y >= GameConfig.map_max_height
+
     def _point_in_body(self, point: Point) -> bool:
         return point in self.bodies[1:]
+
     def _point_in_food(self, food, point: Point) -> bool:
         return food.pos == point
+
+    def is_alive(self):
+        return not self.check_wall_collision() and not self.check_body_collision()
+
     def add_body(self, pos: Point):
         self.bodies.append(pos)
+
     def get_feature(self, fruit) -> np.array:
         feature_list = []
         # 8 vision
@@ -117,8 +143,18 @@ class Snake:
         # tail direction in one hot encoding
         tail_direction = [0, 0, 0, 0]
         tail_direction[direction_map[self.tail_direction]['index']] = 1
-        #print(self.last_direction, self.tail_direction)
+        # print(self.last_direction, self.tail_direction)
         feature_list.extend(tail_direction)
         feature = np.array(feature_list)
-        #print(feature)
+        # print(feature)
         return feature
+
+    @property
+    def fitness(self):
+        return self._fitness
+
+    def calculate_fitness(self):
+        # Give positive minimum fitness for roulette wheel selection
+        self._fitness = self._frames + ((2 ** self.score) + (self.score ** 2.1) * 500) - (
+                ((.25 * self._frames) ** 1.3) * (self.score ** 1.2))
+        self._fitness = max(self._fitness, .1)

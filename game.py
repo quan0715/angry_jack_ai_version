@@ -1,10 +1,13 @@
+from __future__ import annotations
+
 import sys
-from typing import Union, Tuple
+from typing import Union, Tuple, Optional
 import pygame as pg
 from pygame.locals import *
 from setting import GameConfig
 from snake import Snake
 from misc import *
+
 
 class Food:
     def __init__(self):
@@ -23,17 +26,17 @@ class Food:
         rect = pg.Rect(*self.pos.get_point(), GameConfig.grid_width, GameConfig.grid_width)
         pg.draw.rect(screen, GameConfig.food_color, rect)
 
+
 class Game:
-    def __init__(self, mode: str= "default"):
-        self.snake: Snake|None = None
-        self.fruit: Food|None = None
+    def __init__(self, mode: str = "default"):
+        self.snake: Optional[Snake] = None
+        self.fruit: Optional[Food] = None
         self.game_over: bool = False
         self.score = 0
         self.background = None
         self.screen = None
         self.mode = mode
         self.clock = None
-
 
     def game_init(self):
         self.snake: Snake = Snake()
@@ -90,10 +93,11 @@ class Game:
 
     def get_score(self):
         return self.score
+
     def run(self):
         self.game_init()
         while not self.game_over:
-            self.clock.tick(10)
+            self.clock.tick(GameConfig.game_fps)
             for event in pg.event.get():
                 if event.type == QUIT:
                     pg.quit()
@@ -117,11 +121,13 @@ class Game:
 
         return self.game_over
 
+
 def main():
     pg.init()
     pg.display.set_caption("Snake")
     game = Game()
     game.run()
+
 
 if __name__ == "__main__":
     main()
