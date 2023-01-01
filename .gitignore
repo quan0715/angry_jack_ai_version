@@ -1,3 +1,8 @@
 venv
 .idea
 __pycache__/
+*.cfg
+*.pkl
+/Lib
+/Scripts
+/include

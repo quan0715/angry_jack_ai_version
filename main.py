@@ -217,10 +217,12 @@ class VisualizeFrame:
     def update_neural(self):
         neural_screen = pg.Surface((GUIConfig.network_window_size[0], GUIConfig.network_window_size[1]))
         # neural_screen.fill(GUIConfig.testing_color)
-        snake_feature = [bool(f) for f in self.simulation.game.snake.get_feature()]
+        snake:Snake=self.simulation.game.snake
+        network_outputs:list[np.ndarray] = snake.network.last_outputs
+        snake_feature = [bool(f) for f in snake.get_feature()]
         output_feature = snake_feature[24:28]
         # TODO update neural visualization
-        self.neural_vis.update_network([snake_feature, [], [], output_feature])
+        self.neural_vis.update_network([snake_feature, network_outputs[0], network_outputs[1], output_feature])
         self.neural_vis.draw(neural_screen)
         self.background.blit(neural_screen, dest=GUIConfig.neural_screen_pos)
 
