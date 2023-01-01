@@ -30,13 +30,23 @@ class Snake(Individual):
         self.last_direction = None
         self.tail_direction = None
         self.directions: Queue = Queue()
-        self.directions.put(Direction.LEFT if self.head_pos.x > GameConfig.map_max_height // 2 else Direction.RIGHT)
-
+        # self.last_direction = Direction.RIGHT if self.head_pos.x > GameConfig.map_max_height // 2 else Direction.RIGHT
+        # body_
+        if self.head_pos.x > GameConfig.map_max_height // 2:
+            for i in range(1, GameConfig.snake_init_length):
+                self.add_body(Point(self.head_pos.x + GameConfig.grid_width * i, self.head_pos.y))
+            self.last_direction = Direction.LEFT
+        else:
+            self.last_direction = Direction.RIGHT
+            for i in range(1, GameConfig.snake_init_length):
+                self.add_body(Point(self.head_pos.x + GameConfig.grid_width * -1 * i, self.head_pos.y))
+        # self.directions.put()
+        
         self.food = None
         self.is_alive = True
 
         # genetic algorithm stuff
-        self.score = 0  # Number of apples snake gets
+        self.score = len(self.bodies)  # Number of apples snake gets
         self.network = network
         if self.network is None:
             self.network = create_default_model()
