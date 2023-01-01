@@ -33,7 +33,6 @@ class Snake(Individual):
         self.directions.put(Direction.LEFT if self.head_pos.x > GameConfig.map_max_height // 2 else Direction.RIGHT)
 
         self.food = None
-
         self.is_alive = True
 
         # genetic algorithm stuff
@@ -41,6 +40,7 @@ class Snake(Individual):
         self.network: FFN = create_model(32, 4, GAConfig.hidden_layer_size)
         self._fitness = 0
         self._frames = 0
+        self._frames_since_last_food = 0
 
         print(f"Snake generate at {self.head_pos}")
 
@@ -64,9 +64,14 @@ class Snake(Individual):
 
     def update(self):
         self._frames += 1
+        self._frames_since_last_food += 1
+        if self._frames_since_last_food > 100:
+            self.is_alive = False
+            return
 
         if self.check_food_collision():
             self.score += 1
+            self._frames_since_last_food = 0
             self.add_body(self.food.pos)
             self.generate_food()
         elif self.check_wall_collision() or self.check_body_collision():
@@ -176,17 +181,19 @@ class Snake(Individual):
         # 8 vision
         snake_point = self.head_pos
         for direction, vision in eight_vision.items():
-            vision_feature = {"self_to_wall": 0, "self_to_food": 0, "self_to_self": 0}
+            vision_feature = {"dist_to_wall": 0, "dist_to_food": 0, "dist_to_self": 0}
             start_point = Point(*snake_point.get_point())
             while not self._point_in_wall(start_point):
                 start_point.x += vision['x_added'] * GameConfig.grid_width
                 start_point.y += vision['y_added'] * GameConfig.grid_width
                 if self._point_in_body(start_point):
-                    vision_feature['self_to_self'] = Point.euclidean_distance(snake_point, start_point)
+                    # vision_feature['self_to_self'] = Point.euclidean_distance(snake_point, start_point)
+                    vision_feature['dist_to_self'] = 1
                 if self._point_in_food(start_point):
-                    vision_feature['self_to_food'] = Point.euclidean_distance(snake_point, start_point)
+                    # vision_feature['dist_to_food'] = Point.euclidean_distance(snake_point, start_point)
+                    vision_feature['dist_to_food'] = 1
 
-            vision_feature['self_to_wall'] = Point.euclidean_distance(snake_point, start_point)
+            vision_feature['dist_to_wall'] = Point.euclidean_distance(snake_point, start_point)
             feature_list.extend(list(vision_feature.values()))
 
         # head direction in one hot encoding
