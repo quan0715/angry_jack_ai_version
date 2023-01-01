@@ -6,8 +6,8 @@ import pygame as pg
 
 
 class NeuralVisualize:
-    def __init__(self, layers_node_num: List[int] = NetworkConfig.layers_node_num):
-        self.layers_node_num = layers_node_num
+    def __init__(self):
+        self.layers_node_num = [32, *GAConfig.hidden_layer_size, 4]
         self.start_x = GUIConfig.neural_screen_pos[0]
         self.layer_space = (GUIConfig.network_window_size[0] - 2 * self.start_x) / (len(self.layers_node_num) - 1)
         self.layers: List[LayerWidget] = []
@@ -24,7 +24,8 @@ class NeuralVisualize:
 
     def _draw_output_layer_label(self, screen):
         decision_font = pg.font.Font(GUIConfig.font_family, 16)
-        decision_label = [decision_font.render(l, True, GUIConfig.label_color) for l in ('U', 'D', 'L', 'R')]
+        decision_label = [decision_font.render(direction, True, GUIConfig.label_color) for direction in
+                          ('U', 'D', 'L', 'R')]
         for label, node in zip(decision_label, self.layers[-1].nodes):
             node_pos_x, node_pos_y = node.center_pos.get_point()
             screen.blit(label, (node_pos_x + 10, node_pos_y - 10))

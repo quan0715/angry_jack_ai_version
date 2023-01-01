@@ -13,7 +13,7 @@ class GameConfig:
     grid_width: int = 20  # the value of the grid width (rectangle)
     grid_max_width: int = map_max_width // grid_width  # Cartesian coordinate which unit equals to grid_with
     grid_max_height: int = map_max_height // grid_width
-    game_fps: int = 100  # the frame per second of the game
+    game_fps: int = 10  # the frame per second of the game
 
 
 class GUIConfig:
@@ -40,6 +40,6 @@ class GUIConfig:
 
 
 class GAConfig:
-    layers_node_num = [32, 20, 12, 4]
+    hidden_layer_size = [20, 12]
     num_population = 500
     num_offspring = 1000

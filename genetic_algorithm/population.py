@@ -1,6 +1,6 @@
 from typing import List
 
-from individual import Individual
+from .individual import Individual
 
 
 class Population(object):

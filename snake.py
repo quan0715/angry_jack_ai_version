@@ -1,10 +1,25 @@
 from typing import List, Optional
-from neural_network import FFN
+from neural_network import create_model, FFN, get_direction
 from misc import *
 from queue import Queue
+from setting import GAConfig
 from genetic_algorithm.individual import Individual
 import numpy as np
 import pygame as pg
+import random
+
+
+class Food:
+    def __init__(self, pos: Point):
+        self.food_type = "default"  # for skilled food
+        self.pos = pos
+
+    def __repr__(self):
+        return f"Food: {id(self)} at {self.pos}"
+
+    def draw(self, screen):
+        rect = pg.Rect(*self.pos.get_point(), GameConfig.grid_width, GameConfig.grid_width)
+        pg.draw.rect(screen, GameConfig.food_color, rect)
 
 
 class Snake(Individual):
@@ -17,15 +32,52 @@ class Snake(Individual):
         self.directions: Queue = Queue()
         self.directions.put(Direction.LEFT if self.head_pos.x > GameConfig.map_max_height // 2 else Direction.RIGHT)
 
+        self.food = None
+
+        self.is_alive = True
+
         # genetic algorithm stuff
         self.score = 0  # Number of apples snake gets
-        self.network: Optional[FFN] = None
+        self.network: FFN = create_model(32, 4, GAConfig.hidden_layer_size)
         self._fitness = 0
         self._frames = 0
 
-        print(f"snake generate at {self.head_pos}")
+        print(f"Snake generate at {self.head_pos}")
 
-    def moving(self):
+        self.generate_food()
+
+    def generate_food(self):
+        width = GameConfig.grid_width
+        height = GameConfig.grid_width
+        # Find all possible points where the snake is not currently
+        possibilities = [Point(x, y) for x in range(0, GameConfig.map_max_width, width)
+                         for y in range(0, GameConfig.map_max_height, height)
+                         if Point(x, y) not in self.bodies]
+        if possibilities:
+            loc = random.choice(possibilities)
+            self.food = Food(loc)
+        else:
+            print("You win!")
+
+    def look_in_direction(self, direction):
+        self.directions.put(direction)
+
+    def update(self):
+        self._frames += 1
+
+        if self.check_food_collision():
+            self.score += 1
+            self.add_body(self.food.pos)
+            self.generate_food()
+        elif self.check_wall_collision() or self.check_body_collision():
+            self.is_alive = False
+            return
+
+        direction = get_direction(self.network, self.get_feature())
+        self.look_in_direction(direction)
+
+    def move(self):
+        if not self.is_alive: return
         move_flag = False
         while not self.directions.empty() and not move_flag:
             direction = self.directions.get()
@@ -85,6 +137,8 @@ class Snake(Individual):
                     init_point.y += b['y_added']
                 pg.draw.line(screen, GameConfig.line_color, snake_mid_point, init_point.get_point(), 2)
 
+        self.food.draw(screen)
+
     def draw_food_line(self, screen, food):
         food_point = food.pos.get_point()
         food_point = (food_point[0] + GameConfig.grid_width // 2, food_point[1] + GameConfig.grid_width // 2)
@@ -98,8 +152,8 @@ class Snake(Individual):
     def check_body_collision(self):
         return self.head_pos in self.bodies[1:]
 
-    def check_food_collision(self, food):
-        return food.pos in self.bodies
+    def check_food_collision(self):
+        return self.food.pos in self.bodies
 
     def _point_in_wall(self, point: Point) -> bool:
         x, y = point.get_point()
@@ -108,8 +162,8 @@ class Snake(Individual):
     def _point_in_body(self, point: Point) -> bool:
         return point in self.bodies[1:]
 
-    def _point_in_food(self, food, point: Point) -> bool:
-        return food.pos == point
+    def _point_in_food(self, point: Point) -> bool:
+        return self.food.pos == point
 
     def is_alive(self):
         return not self.check_wall_collision() and not self.check_body_collision()
@@ -117,7 +171,7 @@ class Snake(Individual):
     def add_body(self, pos: Point):
         self.bodies.append(pos)
 
-    def get_feature(self, fruit) -> np.array:
+    def get_feature(self) -> np.array:
         feature_list = []
         # 8 vision
         snake_point = self.head_pos
@@ -129,7 +183,7 @@ class Snake(Individual):
                 start_point.y += vision['y_added'] * GameConfig.grid_width
                 if self._point_in_body(start_point):
                     vision_feature['self_to_self'] = Point.euclidean_distance(snake_point, start_point)
-                if self._point_in_food(fruit, start_point):
+                if self._point_in_food(start_point):
                     vision_feature['self_to_food'] = Point.euclidean_distance(snake_point, start_point)
 
             vision_feature['self_to_wall'] = Point.euclidean_distance(snake_point, start_point)

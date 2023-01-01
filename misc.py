@@ -1,7 +1,7 @@
 from setting import GameConfig
 from typing import Union, Tuple
 import random
-from enum import Enum
+from enum import IntEnum
 
 
 def get_map_size() -> Tuple[int, int]:
@@ -63,11 +63,11 @@ class Point:
         return f"position (x: {self.x},y: {self.y})"
 
 
-class Direction(Enum):
-    UP = "UP"
-    DOWN = "DOWN"
-    LEFT = "LEFT"
-    RIGHT = "RIGHT"
+class Direction(IntEnum):
+    UP = 0
+    DOWN = 1
+    LEFT = 2
+    RIGHT = 3
 
 
 direction_map = {

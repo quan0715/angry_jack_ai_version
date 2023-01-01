@@ -29,7 +29,7 @@ class FFN:
         return info
 
     @property
-    def get_last_outputs(self) -> List[np.ndarray]:
+    def last_outputs(self) -> List[np.ndarray]:
         return [layer._last_output.flatten() for layer in self._layers]
 
     def forward(self, x: np.ndarray):
