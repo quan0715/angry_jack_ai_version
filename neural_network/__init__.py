@@ -1,11 +1,12 @@
 from typing import List
-from enum import Enum
+
+from setting import GAConfig
 from .FFN import FFN
 from .Dense import Dense
 
 import numpy as np
 
-__all__ = ['FFN', 'Dense', 'create_model', 'get_direction', 'init_from_chromosome']
+__all__ = ['FFN', 'Dense', 'create_model', 'create_default_model', 'get_direction', 'init_from_chromosome']
 
 
 def create_model(input_size: int,
@@ -19,6 +20,10 @@ def create_model(input_size: int,
         model.add(Dense(output_size=hidden_layers[idx], input_size=hidden_layers[idx - 1], act=activation_func))
     model.add(Dense(output_size, act=output_activation_func))
     return model
+
+
+def create_default_model():
+    return create_model(input_size=32, output_size=4, hidden_layers=GAConfig.hidden_layer_size)
 
 
 def get_direction(model: FFN, feature: np.ndarray):

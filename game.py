@@ -1,34 +1,27 @@
 from __future__ import annotations
 
-import sys
-from typing import Union, Tuple, Optional
+from typing import Optional
+
 import pygame as pg
-from pygame.locals import *
-from setting import GameConfig
-from snake import Snake
+
 from misc import *
+from snake import Snake
 
 
 class Game:
-    def __init__(self, mode: str = "default"):
+    def __init__(self):
         self.snake: Optional[Snake] = None
         self.background = None
         self.screen = None
-        self.mode = mode
-        self.clock = None
 
     def game_init(self, snake: Snake):
         self.snake = snake
-        if self.mode == "default":
-            self.clock = pg.time.Clock()
-            self.background = pg.display.set_mode(get_map_size())
         self.screen = pg.Surface(get_map_size())
         self.screen.fill(GameConfig.background_color)
 
     def update_snake(self):
         self.snake.move()
         self.snake.update()
-        self.snake.draw(self.screen)
 
     def draw_line(self):
         for index in range(GameConfig.grid_max_width):
@@ -44,9 +37,7 @@ class Game:
     def update_window(self):
         self.screen.fill(GameConfig.background_color)
         # self.draw_line()
-        self.update_snake()
-        if self.mode == "default":
-            self.background.blit(self.screen, (0, 0))
+        self.snake.draw(self.screen)
         return self.screen
 
     def get_screen(self):

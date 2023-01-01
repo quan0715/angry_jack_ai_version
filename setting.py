@@ -13,7 +13,7 @@ class GameConfig:
     grid_width: int = 20  # the value of the grid width (rectangle)
     grid_max_width: int = map_max_width // grid_width  # Cartesian coordinate which unit equals to grid_with
     grid_max_height: int = map_max_height // grid_width
-    game_fps: int = 10  # the frame per second of the game
+    game_fps: int = 100  # the frame per second of the game
 
 
 class GUIConfig:
@@ -43,3 +43,11 @@ class GAConfig:
     hidden_layer_size = [20, 12]
     num_population = 500
     num_offspring = 1000
+
+    probability_gaussian = 1.0
+    probability_random_uniform = 0.0
+
+    probability_SBX = 0.5
+    probability_SPBX = 0.5
+
+    mutation_rate = 0.05

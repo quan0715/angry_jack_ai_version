@@ -1,12 +1,12 @@
 from typing import List, Optional
-from neural_network import create_model, FFN, get_direction
+from neural_network import *
 from misc import *
 from queue import Queue
-from setting import GAConfig
 from genetic_algorithm.individual import Individual
 import numpy as np
 import pygame as pg
 import random
+import pickle
 
 
 class Food:
@@ -23,7 +23,7 @@ class Food:
 
 
 class Snake(Individual):
-    def __init__(self):
+    def __init__(self, network: Optional[FFN] = None):
         super().__init__()
         self.head_pos: Point = random_position()
         self.bodies: List[Point] = [self.head_pos]
@@ -37,12 +37,12 @@ class Snake(Individual):
 
         # genetic algorithm stuff
         self.score = 0  # Number of apples snake gets
-        self.network: FFN = create_model(32, 4, GAConfig.hidden_layer_size)
+        self.network = network
+        if self.network is None:
+            self.network = create_default_model()
         self._fitness = 0
         self._frames = 0
         self._frames_since_last_food = 0
-
-        print(f"Snake generate at {self.head_pos}")
 
         self.generate_food()
 
@@ -219,3 +219,8 @@ class Snake(Individual):
         self._fitness = self._frames + ((2 ** self.score) + (self.score ** 2.1) * 500) - (
                 ((.25 * self._frames) ** 1.3) * (self.score ** 1.2))
         self._fitness = max(self._fitness, .1)
+
+    def save(self):
+        with open(f'best_snake.pkl', 'wb') as f:
+            print(f"Snake saved: score {self.score}, fitness {self._fitness:.2f}")
+            pickle.dump(self.network, f)

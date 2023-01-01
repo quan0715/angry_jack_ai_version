@@ -12,7 +12,7 @@ class Dense:
     def __init__(self, output_size: int, input_size: Optional[int] = None, act='relu'):
         self._output_size: int = output_size
         self._input_size: Optional[int] = input_size
-        self._activation = get_activation_function(act)
+        self._activation = act
         self._W: Optional[np.ndarray] = None
         self._B: Optional[np.ndarray] = None
         self._parent: Optional[FFN] = None
@@ -31,5 +31,6 @@ class Dense:
     def forward(self, input: np.ndarray):
         if self._W is None:
             raise Exception('W not set, please specify input size or indicate parent')
-        self._last_output = self._activation(self._W @ input - self._B)
+        activation_func = get_activation_function(self._activation)
+        self._last_output = activation_func(self._W @ input - self._B)
         return self._last_output
