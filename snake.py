@@ -87,7 +87,7 @@ class Snake(Individual):
         elif self.check_wall_collision() or self.check_body_collision():
             self.is_alive = False
             return
-
+        # print(self.get_feature())
         direction = get_direction(self.network, self.get_feature())
         self.look_in_direction(direction)
 
@@ -162,7 +162,6 @@ class Snake(Individual):
     def check_food_collision(self):
         return self.food.pos in self.bodies
 
-
     def is_alive(self):
         return not self.check_wall_collision() and not self.check_body_collision()
 
@@ -174,20 +173,42 @@ class Snake(Individual):
         # 8 vision
         snake_point = self.head_pos
         for direction, vision in eight_vision.items():
-            vision_feature = {"dist_to_wall": 0, "dist_to_food": 0, "dist_to_self": 0}
-            start_point = Point(*snake_point.get_point())
-            while not grid_to_coordinate(start_point).point_in_wall():
-                start_point.x += vision['x_added']
-                start_point.y += vision['y_added']
-                if start_point.point_in_body(self):
-                    vision_feature['dist_to_self'] = Point.euclidean_distance(snake_point, start_point)
-                    # vision_feature['dist_to_self'] = 1
-                if start_point.point_in_food(self.food):
-                    vision_feature['dist_to_food'] = Point.euclidean_distance(snake_point, start_point)
-                    # vision_feature['dist_to_food'] = 1
+            dist_to_apple = np.inf
+            dist_to_self = np.inf
 
-            vision_feature['dist_to_wall'] = Point.euclidean_distance(snake_point, start_point)
-            feature_list.extend(list(vision_feature.values()))
+            distance = 1.0
+            total_distance = 0.0
+
+            cur = Point(*snake_point.get_point())
+
+            cur.x += vision['x_added']
+            cur.y += vision['y_added']
+            total_distance += distance
+            body_found = False
+            food_found = False
+            while not grid_to_coordinate(cur).point_in_wall():
+                if not body_found and cur.point_in_body(self):
+                    dist_to_self = total_distance
+                    body_found = True
+                if not food_found and cur.point_in_food(self.food):
+                    dist_to_apple = total_distance
+                    food_found = True
+
+                cur.x += vision['x_added']
+                cur.y += vision['y_added']
+                total_distance += distance
+
+            dist_to_wall = 1.0 / total_distance
+
+            if GameConfig.vision_type == 'binary':
+                dist_to_apple = 1.0 if dist_to_apple != np.inf else 0.0
+                dist_to_self = 1.0 if dist_to_self != np.inf else 0.0
+
+            elif GameConfig.vision_type == 'distance':
+                dist_to_apple = 1.0 / dist_to_apple
+                dist_to_self = 1.0 / dist_to_self
+
+            feature_list.extend([dist_to_wall, dist_to_apple, dist_to_self])
 
         # head direction in one hot encoding
         head_direction = [0, 0, 0, 0]

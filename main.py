@@ -299,13 +299,13 @@ class VisualizeFrame(PygameLayout):
 
 
 def main():
-    # pg.init()
-    # pg.display.set_caption("Module Visualization")
-    # snake = Snake.load("best_snake.pkl")
-    # frame = VisualizeFrame()
-    # frame.run("test", snake)
-    simulation = Simulation()
-    simulation.run_simulation()
+    pg.init()
+    pg.display.set_caption("Module Visualization")
+    snake = Snake.load("best_snake.pkl")
+    frame = VisualizeFrame()
+    frame.run("test", snake)
+    # simulation = Simulation()
+    # simulation.run_simulation()
 
 
 if __name__ == "__main__":
