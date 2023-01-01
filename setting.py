@@ -15,7 +15,7 @@ class GameConfig:
     grid_max_width: int = map_max_width // grid_width  # Cartesian coordinate which unit equals to grid_with
     grid_max_height: int = map_max_height // grid_width
     game_fps: int = 100  # the frame per second of the game
-    init_snake_length: int = 3  # the initial length of the snake
+    snake_init_length = 3
 
 
 class GUIConfig:
@@ -24,9 +24,8 @@ class GUIConfig:
     label_screen_size: Tuple[int, int] = (400, 150)
     snake_game_display_pos: Tuple[int, int] = (480, 20)
     neural_screen_pos: Tuple[int, int] = (20, 20)
-    label_size = 16
-    first_node_pos = (10, 10)
     node_space = 1
+    label_size = 16
     node_size = 8  # node radius
     line_width = 1
     font_family = 'ChivoMono-Medium.ttf'

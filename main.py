@@ -193,7 +193,7 @@ class Simulation:
             break
 
 
-class LabelsDisplay(PygameLayout):
+class LabelsDisplayWidget(PygameLayout):
     def __init__(self):
         start_pos = Point(GUIConfig.snake_game_display_pos[0],
                           GUIConfig.snake_game_display_pos[1] + GameConfig.map_max_height + 10)
@@ -224,16 +224,22 @@ class VisualizeFrame(PygameLayout):
         self.background = pg.display.set_mode(self.get_size())
         self.background.fill(GUIConfig.background_color)
         self.clock = pg.time.Clock()
+<<<<<<< HEAD
         self.neural_vis = NeuralVisualize()
         self.label_vis = LabelsDisplay()
         self.simulation: Optional[Simulation] = None
+=======
+        self.neural_vis = NeuralVisualizeWidget()
+        self.label_vis = LabelsDisplayWidget()
+        self.simulation = Simulation()
+>>>>>>> 201b206 (snake length)
 
     def update_game(self):
         self.simulation.game.update_snake()
-        snake_game_screen = self.simulation.game.update_window()
-        self.background.blit(snake_game_screen, dest=GUIConfig.snake_game_display_pos)
+        self.simulation.game.draw(self.background)
 
     def update_label(self):
+<<<<<<< HEAD
         if self.simulation.mode == 'test':
             self.label_vis.set_label({
                 'Score': self.simulation.snake.score})
@@ -244,18 +250,25 @@ class VisualizeFrame(PygameLayout):
                 "Best score": f"{self.simulation.best_score}",
                 "Best Fitness": f"{self.simulation.best_fitness}",
             })
+=======
+        self.label_vis.set_label({
+            "Generation": f"{self.simulation.current_generation}",
+            "Individual": f"{self.simulation.current_individual}/{GAConfig.num_population}",
+            "Best score": f"{self.simulation.best_score}",
+            "Best Fitness": f"{self.simulation.best_fitness}",
+            "Mutation rate": f"{GAConfig.mutation_rate}",
+            "Number of offspring": f"{GAConfig.num_offspring}",
+        })
+>>>>>>> 201b206 (snake length)
         self.label_vis.draw(self.background)
 
     def update_neural(self):
-        neural_screen = pg.Surface((GUIConfig.network_window_size[0], GUIConfig.network_window_size[1]))
-        # neural_screen.fill(GUIConfig.testing_color)
         snake: Snake = self.simulation.game.snake
         network_outputs: List[np.ndarray] = snake.network.last_outputs
         snake_feature = [bool(f) for f in snake.get_feature()]
         output_feature = snake_feature[24:28]
         self.neural_vis.update_network([snake_feature, network_outputs[0], network_outputs[1], output_feature])
-        self.neural_vis.draw(neural_screen)
-        self.background.blit(neural_screen, dest=GUIConfig.neural_screen_pos)
+        self.neural_vis.draw(self.background)
 
     def read_keyboard(self, event):
         if event.type == KEYDOWN and self.simulation.mode == "manual":

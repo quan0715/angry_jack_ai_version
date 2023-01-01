@@ -5,18 +5,18 @@ from misc import *
 import pygame as pg
 
 
-class NeuralVisualize(PygameLayout):
+class NeuralVisualizeWidget(PygameLayout):
     def __init__(self):
         size_config = GUIConfig.network_window_size
         super().__init__(Point(*GUIConfig.neural_screen_pos), size_config[0], size_config[1])
         self.layers_node_num = [32, *GAConfig.hidden_layer_size, 4]
-        self.start_x = self.get_start_pos().x
-        self.layer_space = (self.get_size()[0] - 2 * self.start_x) / (len(self.layers_node_num) - 1)
+        self.start_point = Point(GUIConfig.node_size, GUIConfig.node_size)
+        self.layer_space = (self.get_width() - self.start_point.x * 2) / len(self.layers_node_num)
         self.layers: List[LayerWidget] = []
         self.build_network()
 
     def build_network(self):
-        start_x = self.start_x
+        start_x = self.start_point.x
         for layer_idx, node_num in enumerate(self.layers_node_num):
             self.layers.append(LayerWidget(node_num, start_x + self.layer_space * layer_idx))
 
@@ -33,12 +33,14 @@ class NeuralVisualize(PygameLayout):
             screen.blit(label, (node_pos_x + 10, node_pos_y - 10))
 
     def draw(self, win):
+        screen = self.get_screen()
+        # screen.fill(GUIConfig.testing_color)
         for idx in range(len(self.layers_node_num)):
             if idx != len(self.layers_node_num) - 1:
-                self.layers[idx].connect_with_layer(self.layers[idx + 1], win)
-            self.layers[idx].draw(win)
-
-        self._draw_output_layer_label(win)
+                self.layers[idx].connect_with_layer(self.layers[idx + 1], screen)
+            self.layers[idx].draw(screen)
+        self._draw_output_layer_label(screen)
+        win.blit(screen, self.get_start_pos().get_point())
 
 
 class LayerWidget:
@@ -46,8 +48,7 @@ class LayerWidget:
         self.start_x = start_x
         self.node_number = node_number
         space_of_each_node = 2 * GUIConfig.node_size + GUIConfig.node_space
-        self.start_y = (GUIConfig.neural_screen_pos[1] + GUIConfig.network_window_size[
-            1] - self.node_number * space_of_each_node - GUIConfig.node_space) / 2
+        self.start_y = (GUIConfig.node_size * 2 + GUIConfig.network_window_size[1] - self.node_number * space_of_each_node - GUIConfig.node_space) / 2
         self.nodes = [NodeWidget(Point(self.start_x, self.start_y + idx * space_of_each_node)) for idx in
                       range(node_number)]
 
@@ -70,10 +71,9 @@ class LayerWidget:
 class NodeWidget:
     def __init__(self, center_pos: Point, status=False):
         self.center_pos: Point = center_pos  # center
-        self.status: bool
-        self.node_color: pg.Color
-        self.line_color: pg.Color
-        self.update_status(status)
+        self.status: bool = False
+        self.node_color: pg.Color = GUIConfig.node_active_color
+        self.line_color: pg.Color = GUIConfig.line_active_color
 
     def update_status(self, status: bool):
         self.status = status
