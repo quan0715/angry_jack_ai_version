@@ -6,8 +6,8 @@ import pygame as pg
 
 
 class NeuralVisualize:
-    def __init__(self, layers_node_num: List[int] = GAConfig.layers_node_num):
-        self.layers_node_num = layers_node_num
+    def __init__(self):
+        self.layers_node_num = [32, *GAConfig.hidden_layer_size, 4]
         self.start_x = GUIConfig.neural_screen_pos[0]
         self.layer_space = (GUIConfig.network_window_size[0] - 2 * self.start_x) / (len(self.layers_node_num) - 1)
         self.layers: List[LayerWidget] = []
