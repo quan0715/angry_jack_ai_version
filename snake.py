@@ -18,31 +18,31 @@ class Food:
         return f"Food: {id(self)} at {self.pos}"
 
     def draw(self, screen):
-        rect = pg.Rect(*self.pos.get_point(), GameConfig.grid_width, GameConfig.grid_width)
+        rect = pg.Rect(*(grid_to_coordinate(self.pos).get_point()), GameConfig.grid_width, GameConfig.grid_width)
         pg.draw.rect(screen, GameConfig.food_color, rect)
 
 
 class Snake(Individual):
     def __init__(self, network: Optional[FFN] = None):
         super().__init__()
-        self.head_pos: Point = random_position()
+        self.head_pos: Point = random_grid_position()
         self.bodies: List[Point] = [self.head_pos]
         self.last_direction = None
         self.tail_direction = None
         self.directions = Queue()
 
-        x, y = self.head_pos.get_point()
+        x, y = grid_to_coordinate(self.head_pos).get_point()
 
         possible_initial_directions = [Direction.LEFT if x > GameConfig.map_max_height // 2 else Direction.RIGHT,
                                        Direction.UP if y > GameConfig.map_max_width // 2 else Direction.DOWN]
         self.initial_direction = random.choice(possible_initial_directions)
         self.directions.put(self.initial_direction)
 
-        for _ in range(GameConfig.init_snake_length):
+        for _ in range(GameConfig.snake_init_length):
             opposite_direction = direction_map[self.initial_direction]['check']
             offset_x = direction_map[opposite_direction]['x_added']
             offset_y = direction_map[opposite_direction]['y_added']
-            self.add_body(self.bodies[-1] + (offset_x * GameConfig.grid_width, offset_y * GameConfig.grid_width))
+            self.add_body(Point(self.bodies[-1].x + offset_x, self.bodies[-1].y + offset_y))
 
         self.food = None
         self.is_alive = True
@@ -59,11 +59,9 @@ class Snake(Individual):
         self.generate_food()
 
     def generate_food(self):
-        width = GameConfig.grid_width
-        height = GameConfig.grid_width
         # Find all possible points where the snake is not currently
-        possibilities = [Point(x, y) for x in range(0, GameConfig.map_max_width, width)
-                         for y in range(0, GameConfig.map_max_height, height)
+        possibilities = [Point(x, y) for x in range(GameConfig.grid_max_width)
+                         for y in range(GameConfig.grid_max_height)
                          if Point(x, y) not in self.bodies]
         if possibilities:
             loc = random.choice(possibilities)
@@ -101,8 +99,8 @@ class Snake(Individual):
             for d, d_t in direction_map.items():
                 if direction == d and self.last_direction != d_t['check']:
                     self.head_pos = Point(
-                        self.bodies[0].x + GameConfig.grid_width * d_t['x_added'],
-                        self.bodies[0].y + GameConfig.grid_width * d_t['y_added']
+                        self.bodies[0].x + d_t['x_added'],
+                        self.bodies[0].y + d_t['y_added']
                     )
                     self.bodies.insert(0, self.head_pos)
                     self.bodies.pop(len(self.bodies) - 1)
@@ -111,8 +109,8 @@ class Snake(Individual):
                     break
         if not move_flag:
             self.head_pos = Point(
-                self.bodies[0].x + GameConfig.grid_width * direction_map[self.last_direction]['x_added'],
-                self.bodies[0].y + GameConfig.grid_width * direction_map[self.last_direction]['y_added']
+                self.bodies[0].x + direction_map[self.last_direction]['x_added'],
+                self.bodies[0].y + direction_map[self.last_direction]['y_added']
             )
             self.bodies.insert(0, self.head_pos)
             self.bodies.pop(len(self.bodies) - 1)
@@ -132,29 +130,30 @@ class Snake(Individual):
 
     def draw(self, screen, draw_line=True):
         # draw head (with different color)
-        h_x, h_y = self.head_pos.get_point()
+        h_x, h_y = grid_to_coordinate(self.head_pos).get_point()
         head_rect = pg.Rect(h_x, h_y, GameConfig.grid_width, GameConfig.grid_width)
         pg.draw.rect(screen, GameConfig.head_color, head_rect)
         # draw tail (with different color)
         for tail_pos in self.bodies[1:]:
-            t_x, t_y = tail_pos.get_point()
+            t_x, t_y = grid_to_coordinate(tail_pos).get_point()
             tail_rect = pg.Rect(t_x, t_y, GameConfig.grid_width, GameConfig.grid_width)
             pg.draw.rect(screen, GameConfig.tail_color, tail_rect)
         # draw 8 direction line
         if draw_line:
             g_w = GameConfig.grid_width
-            snake_mid_point = mid_x, mid_y = self.head_pos.x + g_w // 2, self.head_pos.y + g_w // 2
+            head_pos_c = grid_to_coordinate(self.head_pos)
+            mid_x, mid_y = head_pos_c.x + g_w // 2, head_pos_c.y + g_w // 2
             for b in eight_vision.values():
                 init_point = Point(mid_x, mid_y)
                 while not init_point.point_in_wall():
                     init_point.x += b['x_added']
                     init_point.y += b['y_added']
-                pg.draw.line(screen, GameConfig.line_color, snake_mid_point, init_point.get_point(), 2)
+                pg.draw.line(screen, GameConfig.line_color, (mid_x, mid_y), init_point.get_point(), 2)
 
         self.food.draw(screen)
 
     def check_wall_collision(self):
-        x, y = self.head_pos.get_point()
+        x, y = grid_to_coordinate(self.head_pos).get_point()
         return x < 0 or x >= GameConfig.map_max_width or y < 0 or y >= GameConfig.map_max_height
 
     def check_body_collision(self):
@@ -177,9 +176,9 @@ class Snake(Individual):
         for direction, vision in eight_vision.items():
             vision_feature = {"dist_to_wall": 0, "dist_to_food": 0, "dist_to_self": 0}
             start_point = Point(*snake_point.get_point())
-            while not start_point.point_in_wall():
-                start_point.x += vision['x_added'] * GameConfig.grid_width
-                start_point.y += vision['y_added'] * GameConfig.grid_width
+            while not grid_to_coordinate(start_point).point_in_wall():
+                start_point.x += vision['x_added']
+                start_point.y += vision['y_added']
                 if start_point.point_in_body(self):
                     # vision_feature['self_to_self'] = Point.euclidean_distance(snake_point, start_point)
                     vision_feature['dist_to_self'] = 1

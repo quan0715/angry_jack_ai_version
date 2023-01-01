@@ -224,50 +224,36 @@ class VisualizeFrame(PygameLayout):
         self.background = pg.display.set_mode(self.get_size())
         self.background.fill(GUIConfig.background_color)
         self.clock = pg.time.Clock()
-<<<<<<< HEAD
-        self.neural_vis = NeuralVisualize()
-        self.label_vis = LabelsDisplay()
-        self.simulation: Optional[Simulation] = None
-=======
         self.neural_vis = NeuralVisualizeWidget()
         self.label_vis = LabelsDisplayWidget()
         self.simulation = Simulation()
->>>>>>> 201b206 (snake length)
 
     def update_game(self):
         self.simulation.game.update_snake()
         self.simulation.game.draw(self.background)
 
     def update_label(self):
-<<<<<<< HEAD
         if self.simulation.mode == 'test':
             self.label_vis.set_label({
-                'Score': self.simulation.snake.score})
+                'Score': self.simulation.snake.score}
+            )
         else:
             self.label_vis.set_label({
                 "Generation": f"{self.simulation.current_generation}",
                 "Individual": f"{self.simulation.current_individual}/{GAConfig.num_offspring}",
                 "Best score": f"{self.simulation.best_score}",
                 "Best Fitness": f"{self.simulation.best_fitness}",
+                "Mutation rate": f"{GAConfig.mutation_rate}",
+                "Number of offspring": f"{GAConfig.num_offspring}",
             })
-=======
-        self.label_vis.set_label({
-            "Generation": f"{self.simulation.current_generation}",
-            "Individual": f"{self.simulation.current_individual}/{GAConfig.num_population}",
-            "Best score": f"{self.simulation.best_score}",
-            "Best Fitness": f"{self.simulation.best_fitness}",
-            "Mutation rate": f"{GAConfig.mutation_rate}",
-            "Number of offspring": f"{GAConfig.num_offspring}",
-        })
->>>>>>> 201b206 (snake length)
+
         self.label_vis.draw(self.background)
 
     def update_neural(self):
         snake: Snake = self.simulation.game.snake
         network_outputs: List[np.ndarray] = snake.network.last_outputs
         snake_feature = [bool(f) for f in snake.get_feature()]
-        output_feature = snake_feature[24:28]
-        self.neural_vis.update_network([snake_feature, network_outputs[0], network_outputs[1], output_feature])
+        self.neural_vis.update_network([snake_feature, network_outputs[0], network_outputs[1], network_outputs[2]])
         self.neural_vis.draw(self.background)
 
     def read_keyboard(self, event):
@@ -315,12 +301,11 @@ class VisualizeFrame(PygameLayout):
 def main():
     pg.init()
     pg.display.set_caption("Module Visualization")
-
-    # snake = Snake.load("best_snake.pkl")
-    # frame = VisualizeFrame()
-    # frame.run("test", snake)
-    simulation = Simulation()
-    simulation.run_simulation()
+    snake = Snake.load("best_snake.pkl")
+    frame = VisualizeFrame()
+    frame.run("train", snake)
+    # simulation = Simulation()
+    # simulation.run_simulation()
 
 
 if __name__ == "__main__":

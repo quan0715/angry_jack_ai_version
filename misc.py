@@ -19,12 +19,21 @@ def random_position():
     return Point(random_x, random_y)
 
 
+def random_grid_position():
+    random_x = random.randint(0, GameConfig.grid_max_height) // GameConfig.grid_width
+    random_y = random.randint(0, GameConfig.grid_max_width) // GameConfig.grid_width
+    return Point(random_x, random_y)
+
+
+def grid_to_coordinate(point):
+    return Point(point.x * GameConfig.grid_width, point.y * GameConfig.grid_width)
+
 class Point:
     def __init__(self, x: int, y: int):
         self.x = x
         self.y = y
-        self.grid_x = self.x // GameConfig.grid_width
-        self.grid_y = self.y // GameConfig.grid_width
+        # self.grid_x = self.x // GameConfig.grid_width
+        # self.grid_y = self.y // GameConfig.grid_width
 
     def get_point(self) -> tuple:
         return self.x, self.y,
@@ -32,8 +41,8 @@ class Point:
     def update_point(self, x: int, y: int):
         self.x = x
         self.y = y
-        self.grid_x = self.x // GameConfig.grid_width
-        self.grid_y = self.y // GameConfig.grid_width
+        # self.grid_x = self.x // GameConfig.grid_width
+        # self.grid_y = self.y // GameConfig.grid_width
 
     def point_in_wall(self) -> bool:
         x, y = self.get_point()
@@ -85,11 +94,12 @@ class PygameLayout:
         self._start_pos: Point = start_pos  # left top position
         self._height = height
         self._width = width
+
     def get_height(self):
         return self._height
 
     def get_width(self):
-        return  self._width
+        return self._width
 
     def get_size(self) -> Tuple[int, int]:
         return self._height, self._width
