@@ -29,8 +29,20 @@ class Snake(Individual):
         self.bodies: List[Point] = [self.head_pos]
         self.last_direction = None
         self.tail_direction = None
-        self.directions: Queue = Queue()
-        self.directions.put(Direction.LEFT if self.head_pos.x > GameConfig.map_max_height // 2 else Direction.RIGHT)
+        self.directions = Queue()
+
+        x, y = self.head_pos.get_point()
+
+        possible_initial_directions = [Direction.LEFT if x > GameConfig.map_max_height // 2 else Direction.RIGHT,
+                                       Direction.UP if y > GameConfig.map_max_width // 2 else Direction.DOWN]
+        self.initial_direction = random.choice(possible_initial_directions)
+        self.directions.put(self.initial_direction)
+
+        for _ in range(GameConfig.init_snake_length):
+            opposite_direction = direction_map[self.initial_direction]['check']
+            offset_x = direction_map[opposite_direction]['x_added']
+            offset_y = direction_map[opposite_direction]['y_added']
+            self.add_body(self.bodies[-1] + (offset_x * GameConfig.grid_width, offset_y * GameConfig.grid_width))
 
         self.food = None
         self.is_alive = True
@@ -201,6 +213,12 @@ class Snake(Individual):
         self._fitness = self._frames + ((2 ** self.score) + (self.score ** 2.1) * 500) - (
                 ((.25 * self._frames) ** 1.3) * (self.score ** 1.2))
         self._fitness = max(self._fitness, .1)
+
+    @staticmethod
+    def load(file_name):
+        with open(file_name, 'rb') as f:
+            network = pickle.load(f)
+            return Snake(network)
 
     def save(self):
         with open(f'best_snake.pkl', 'wb') as f:

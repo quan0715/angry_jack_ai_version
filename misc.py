@@ -60,6 +60,12 @@ class Point:
             return True
         return False
 
+    def __add__(self, other):
+        if isinstance(other, tuple) and len(other) == 2:
+            return Point(self.x + other[0], self.y + other[1])
+        elif isinstance(other, Point):
+            return Point(self.x + other.x, self.y + other.y)
+
     def __sub__(self, other: Union["Point", Tuple[int, int]]) -> "Point":
         if isinstance(other, tuple) and len(other) == 2:
             diff_x = self.x - other[0]
