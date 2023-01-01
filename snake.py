@@ -130,25 +130,16 @@ class Snake(Individual):
             pg.draw.rect(screen, GameConfig.tail_color, tail_rect)
         # draw 8 direction line
         if draw_line:
-            # orientation: dict = self.head_pos.get_eight_orientation_distance()
-            # b_x, b_y = get_map_size()
-            # eight_vision
             g_w = GameConfig.grid_width
             snake_mid_point = mid_x, mid_y = self.head_pos.x + g_w // 2, self.head_pos.y + g_w // 2
             for b in eight_vision.values():
                 init_point = Point(mid_x, mid_y)
-                while not self._point_in_wall(init_point):
+                while not init_point.point_in_wall():
                     init_point.x += b['x_added']
                     init_point.y += b['y_added']
                 pg.draw.line(screen, GameConfig.line_color, snake_mid_point, init_point.get_point(), 2)
 
         self.food.draw(screen)
-
-    def draw_food_line(self, screen, food):
-        food_point = food.pos.get_point()
-        food_point = (food_point[0] + GameConfig.grid_width // 2, food_point[1] + GameConfig.grid_width // 2)
-        snake_mid_point = self.head_pos.x + GameConfig.grid_width // 2, self.head_pos.y + GameConfig.grid_width // 2
-        pg.draw.line(screen, GameConfig.food_color, snake_mid_point, food_point, 2)
 
     def check_wall_collision(self):
         x, y = self.head_pos.get_point()
@@ -160,15 +151,6 @@ class Snake(Individual):
     def check_food_collision(self):
         return self.food.pos in self.bodies
 
-    def _point_in_wall(self, point: Point) -> bool:
-        x, y = point.get_point()
-        return x < 0 or x >= GameConfig.map_max_width or y < 0 or y >= GameConfig.map_max_height
-
-    def _point_in_body(self, point: Point) -> bool:
-        return point in self.bodies[1:]
-
-    def _point_in_food(self, point: Point) -> bool:
-        return self.food.pos == point
 
     def is_alive(self):
         return not self.check_wall_collision() and not self.check_body_collision()
@@ -183,13 +165,13 @@ class Snake(Individual):
         for direction, vision in eight_vision.items():
             vision_feature = {"dist_to_wall": 0, "dist_to_food": 0, "dist_to_self": 0}
             start_point = Point(*snake_point.get_point())
-            while not self._point_in_wall(start_point):
+            while not start_point.point_in_wall():
                 start_point.x += vision['x_added'] * GameConfig.grid_width
                 start_point.y += vision['y_added'] * GameConfig.grid_width
-                if self._point_in_body(start_point):
+                if start_point.point_in_body(self):
                     # vision_feature['self_to_self'] = Point.euclidean_distance(snake_point, start_point)
                     vision_feature['dist_to_self'] = 1
-                if self._point_in_food(start_point):
+                if start_point.point_in_food(self.food):
                     # vision_feature['dist_to_food'] = Point.euclidean_distance(snake_point, start_point)
                     vision_feature['dist_to_food'] = 1
 

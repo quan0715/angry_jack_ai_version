@@ -8,7 +8,7 @@ from misc import *
 from snake import Snake
 
 
-class Game:
+class GameWidget:
     def __init__(self):
         self.snake: Optional[Snake] = None
         self.background = None

@@ -1,3 +1,4 @@
+import json
 from typing import Tuple
 from pygame import Color
 
@@ -22,7 +23,7 @@ class GUIConfig:
     label_screen_size: Tuple[int, int] = (400, 150)
     snake_game_display_pos: Tuple[int, int] = (480, 20)
     neural_screen_pos: Tuple[int, int] = (20, 20)
-    label_size = 20
+    label_size = 16
     first_node_pos = (10, 10)
     node_space = 1
     node_size = 8  # node radius
@@ -40,14 +41,13 @@ class GUIConfig:
 
 
 class GAConfig:
-    hidden_layer_size = [20, 12]
-    num_population = 500
-    num_offspring = 1000
-
-    probability_gaussian = 1.0
-    probability_random_uniform = 0.0
-
-    probability_SBX = 0.5
-    probability_SPBX = 0.5
-
-    mutation_rate = 0.05
+    with open('Network_Config.json', 'r') as f:
+        setting_file = json.load(f)
+    hidden_layer_size = setting_file['hidden_layer_size']
+    num_population = setting_file['num_population']
+    num_offspring = setting_file['num_offspring']
+    probability_gaussian = setting_file['probability_gaussian']
+    probability_random_uniform = setting_file['probability_random_uniform']
+    probability_SBX = setting_file['probability_SBX']
+    probability_SPBX = setting_file['probability_SPBX']
+    mutation_rate = setting_file['mutation_rate']

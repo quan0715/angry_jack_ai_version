@@ -1,3 +1,5 @@
+import json
+
 import pygame.font
 import sys
 
@@ -12,7 +14,7 @@ from setting import *
 class Simulation:
     def __init__(self, mode="train"):
         self.mode = mode
-        self.game = Game()
+        self.game = GameWidget()
 
         # genetic algorithm stuff
         self.individuals: List[Snake] = []
@@ -43,7 +45,10 @@ class Simulation:
     def next_individual(self):
         self.snake.calculate_fitness()
         fitness = self.snake.fitness
+        score = self.snake.score
         # print(self.current_individual, self.snake.score, fitness)
+        if score > self.best_score:
+            self.best_score = score
 
         if fitness > self.best_fitness:
             self.best_fitness = fitness
@@ -181,14 +186,38 @@ class Simulation:
             else:
                 self.next_individual()
 
+class LabelsDisplay(PygameLayout):
+    def __init__(self):
+        start_pos = Point(GUIConfig.snake_game_display_pos[0], GUIConfig.snake_game_display_pos[1] + GameConfig.map_max_height + 10)
+        height, width = GUIConfig.label_screen_size
+        super().__init__(start_pos, height, width)
+        self.font = pygame.font.Font(GUIConfig.font_family, GUIConfig.label_size)
+        self.label_start_pos = Point(5, 5)
+        self.label_dict = None
+
+    def draw(self, win):
+        screen = self.get_screen()
+        for idx, item in enumerate(self.label_dict.items()):
+            label = self.font.render(f'{item[0]}: ', True, GUIConfig.label_color)
+            text = self.font.render(f'{item[1]}', True, GUIConfig.text_color)
+            row_x, row_y = self.label_start_pos.x, self.label_start_pos.y + GUIConfig.label_size * idx
+            screen.blit(label, (row_x, row_y))
+            screen.blit(text, (row_x + label.get_width(), row_y))
+
+        win.blit(screen, self.get_start_pos().get_point())
+
+    def set_label(self, label_dict: dict):
+        self.label_dict = label_dict
+
+
 
 class VisualizeFrame:
     def __init__(self):
         self.background = pg.display.set_mode(GUIConfig.main_window_size)
         self.background.fill(GUIConfig.background_color)
         self.clock = pg.time.Clock()
-        self.font = pygame.font.Font(GUIConfig.font_family, GUIConfig.label_size)
         self.neural_vis = NeuralVisualize()
+        self.label_vis = LabelsDisplay()
         self.simulation = Simulation()
 
     def update_game(self):
@@ -197,22 +226,13 @@ class VisualizeFrame:
         self.background.blit(snake_game_screen, dest=GUIConfig.snake_game_display_pos)
 
     def update_label(self):
-        def generate_label(label: str, value: str, start_pos):
-            label = self.font.render(f'{label}: ', True, GUIConfig.label_color)
-            text = self.font.render(f'{value}', True, GUIConfig.text_color)
-            label_pos, text_pos = start_pos, (start_pos[0] + label.get_width(), start_pos[1])
-            label_screen.blit(label, label_pos)
-            label_screen.blit(text, text_pos)
-
-        label_screen = pg.Surface(GUIConfig.label_screen_size)
-        # label_screen.fill(GUIConfig.testing_color)
-        game_screen_pos = GUIConfig.snake_game_display_pos
-        label_screen_pos = game_screen_pos[0], game_screen_pos[1] + GameConfig.map_max_height + 10
-        generate_label("Generation", f"{0}", (5, 5))
-        generate_label("Best score", f"{self.simulation.snake.score}", (5, GUIConfig.label_size + 5))
-        generate_label("Best Fitness", f"{0}", (5, GUIConfig.label_size * 2 + 5))
-        generate_label("Network layers", f"{GAConfig.hidden_layer_size}", (5, GUIConfig.label_size * 3 + 5))
-        self.background.blit(label_screen, dest=label_screen_pos)
+        self.label_vis.set_label({
+            "Generation": f"{self.simulation.current_generation}",
+            "Individual": f"{self.simulation.current_individual}/{GAConfig.num_offspring}",
+            "Best score": f"{self.simulation.best_score}",
+            "Best Fitness": f"{self.simulation.best_fitness}",
+        })
+        self.label_vis.draw(self.background)
 
     def update_neural(self):
         neural_screen = pg.Surface((GUIConfig.network_window_size[0], GUIConfig.network_window_size[1]))
@@ -262,15 +282,15 @@ class VisualizeFrame:
 
             pg.display.flip()
 
-
 def main():
-    # pg.init()
-    # pg.display.set_caption("Module Visualization")
-    # frame = VisualizeFrame()
-    # frame.run()
-    simulation = Simulation()
-    simulation.run_simulation()
+    pg.init()
+    pg.display.set_caption("Module Visualization")
+    frame = VisualizeFrame()
+    frame.run()
+    #simulation = Simulation()
+    #simulation.run_simulation()
 
 
 if __name__ == "__main__":
     main()
+    # read_setting_file()

@@ -2,6 +2,7 @@ from setting import GameConfig
 from typing import Union, Tuple
 import random
 from enum import IntEnum
+from pygame import Surface
 
 
 def get_map_size() -> Tuple[int, int]:
@@ -34,6 +35,16 @@ class Point:
         self.grid_x = self.x // GameConfig.grid_width
         self.grid_y = self.y // GameConfig.grid_width
 
+    def point_in_wall(self) -> bool:
+        x, y = self.get_point()
+        return x < 0 or x >= GameConfig.map_max_width or y < 0 or y >= GameConfig.map_max_height
+
+    def point_in_body(self, snake: 'Snake') -> bool:
+        return self in snake.bodies[1:]
+
+    def point_in_food(self, food: 'Food') -> bool:
+        return food.pos == self
+
     @classmethod
     def euclidean_distance(cls, point1, point2):
         if isinstance(point1, tuple):
@@ -62,6 +73,21 @@ class Point:
     def __repr__(self):
         return f"position (x: {self.x},y: {self.y})"
 
+
+class PygameLayout:
+    def __init__(self, start_pos: Point, height: int, width: int):
+        self._start_pos: Point = start_pos  # left top position
+        self._height = height
+        self._width = width
+
+    def get_size(self) -> Tuple[int, int]:
+        return self._height, self._width
+
+    def get_start_pos(self) -> Point:
+        return self._start_pos
+
+    def get_screen(self) -> Surface:
+        return Surface(self.get_size())
 
 class Direction(IntEnum):
     UP = 0
