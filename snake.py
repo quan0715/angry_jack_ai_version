@@ -180,11 +180,11 @@ class Snake(Individual):
                 start_point.x += vision['x_added']
                 start_point.y += vision['y_added']
                 if start_point.point_in_body(self):
-                    # vision_feature['self_to_self'] = Point.euclidean_distance(snake_point, start_point)
-                    vision_feature['dist_to_self'] = 1
+                    vision_feature['dist_to_self'] = Point.euclidean_distance(snake_point, start_point)
+                    # vision_feature['dist_to_self'] = 1
                 if start_point.point_in_food(self.food):
-                    # vision_feature['dist_to_food'] = Point.euclidean_distance(snake_point, start_point)
-                    vision_feature['dist_to_food'] = 1
+                    vision_feature['dist_to_food'] = Point.euclidean_distance(snake_point, start_point)
+                    # vision_feature['dist_to_food'] = 1
 
             vision_feature['dist_to_wall'] = Point.euclidean_distance(snake_point, start_point)
             feature_list.extend(list(vision_feature.values()))

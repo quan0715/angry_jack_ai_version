@@ -240,11 +240,11 @@ class VisualizeFrame(PygameLayout):
         else:
             self.label_vis.set_label({
                 "Generation": f"{self.simulation.current_generation}",
-                "Individual": f"{self.simulation.current_individual}/{GAConfig.num_offspring}",
+                "Individual": f"{self.simulation.current_individual}/{GAConfig.num_population}",
                 "Best score": f"{self.simulation.best_score}",
-                "Best Fitness": f"{self.simulation.best_fitness}",
+                "Best fitness": f"{self.simulation.best_fitness}",
                 "Mutation rate": f"{GAConfig.mutation_rate}",
-                "Number of offspring": f"{GAConfig.num_offspring}",
+                "Number of population": f"{GAConfig.num_population}",
             })
 
         self.label_vis.draw(self.background)
@@ -299,15 +299,14 @@ class VisualizeFrame(PygameLayout):
 
 
 def main():
-    pg.init()
-    pg.display.set_caption("Module Visualization")
-    snake = Snake.load("best_snake.pkl")
-    frame = VisualizeFrame()
-    frame.run("train", snake)
-    # simulation = Simulation()
-    # simulation.run_simulation()
+    # pg.init()
+    # pg.display.set_caption("Module Visualization")
+    # snake = Snake.load("best_snake.pkl")
+    # frame = VisualizeFrame()
+    # frame.run("test", snake)
+    simulation = Simulation()
+    simulation.run_simulation()
 
 
 if __name__ == "__main__":
     main()
-    # read_setting_file()
