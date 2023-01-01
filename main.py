@@ -186,6 +186,7 @@ class Simulation:
             else:
                 self.next_individual()
 
+
 class LabelsDisplay(PygameLayout):
     def __init__(self):
         start_pos = Point(GUIConfig.snake_game_display_pos[0], GUIConfig.snake_game_display_pos[1] + GameConfig.map_max_height + 10)
@@ -210,10 +211,10 @@ class LabelsDisplay(PygameLayout):
         self.label_dict = label_dict
 
 
-
-class VisualizeFrame:
+class VisualizeFrame(PygameLayout):
     def __init__(self):
-        self.background = pg.display.set_mode(GUIConfig.main_window_size)
+        super().__init__(Point(0, 0), GUIConfig.main_window_size[0], GUIConfig.main_window_size[1])
+        self.background = pg.display.set_mode(self.get_size())
         self.background.fill(GUIConfig.background_color)
         self.clock = pg.time.Clock()
         self.neural_vis = NeuralVisualize()
@@ -237,8 +238,8 @@ class VisualizeFrame:
     def update_neural(self):
         neural_screen = pg.Surface((GUIConfig.network_window_size[0], GUIConfig.network_window_size[1]))
         # neural_screen.fill(GUIConfig.testing_color)
-        snake:Snake=self.simulation.game.snake
-        network_outputs:list[np.ndarray] = snake.network.last_outputs
+        snake: Snake = self.simulation.game.snake
+        network_outputs: List[np.ndarray] = snake.network.last_outputs
         snake_feature = [bool(f) for f in snake.get_feature()]
         output_feature = snake_feature[24:28]
         # TODO update neural visualization

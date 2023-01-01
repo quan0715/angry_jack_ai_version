@@ -79,6 +79,11 @@ class PygameLayout:
         self._start_pos: Point = start_pos  # left top position
         self._height = height
         self._width = width
+    def get_height(self):
+        return self._height
+
+    def get_width(self):
+        return  self._width
 
     def get_size(self) -> Tuple[int, int]:
         return self._height, self._width

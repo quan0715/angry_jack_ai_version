@@ -5,11 +5,13 @@ from misc import *
 import pygame as pg
 
 
-class NeuralVisualize:
+class NeuralVisualize(PygameLayout):
     def __init__(self):
+        size_config = GUIConfig.network_window_size
+        super().__init__(Point(*GUIConfig.neural_screen_pos), size_config[0], size_config[1])
         self.layers_node_num = [32, *GAConfig.hidden_layer_size, 4]
-        self.start_x = GUIConfig.neural_screen_pos[0]
-        self.layer_space = (GUIConfig.network_window_size[0] - 2 * self.start_x) / (len(self.layers_node_num) - 1)
+        self.start_x = self.get_start_pos().x
+        self.layer_space = (self.get_size()[0] - 2 * self.start_x) / (len(self.layers_node_num) - 1)
         self.layers: List[LayerWidget] = []
         self.build_network()
 
@@ -30,13 +32,13 @@ class NeuralVisualize:
             node_pos_x, node_pos_y = node.center_pos.get_point()
             screen.blit(label, (node_pos_x + 10, node_pos_y - 10))
 
-    def draw(self, screen):
+    def draw(self, win):
         for idx in range(len(self.layers_node_num)):
             if idx != len(self.layers_node_num) - 1:
-                self.layers[idx].connect_with_layer(self.layers[idx + 1], screen)
-            self.layers[idx].draw(screen)
+                self.layers[idx].connect_with_layer(self.layers[idx + 1], win)
+            self.layers[idx].draw(win)
 
-        self._draw_output_layer_label(screen)
+        self._draw_output_layer_label(win)
 
 
 class LayerWidget:
@@ -60,17 +62,17 @@ class LayerWidget:
         for node, f in zip(self.nodes, feature):
             node.update_status(f)
 
-    def draw(self, screen: pg.Surface):
+    def draw(self, win: pg.Surface):
         for node in self.nodes:
-            node.draw(screen)
+            node.draw(win)
 
 
 class NodeWidget:
     def __init__(self, center_pos: Point, status=False):
         self.center_pos: Point = center_pos  # center
-        self.status: bool = None
-        self.node_color: pg.Color = None
-        self.line_color: pg.Color = None
+        self.status: bool
+        self.node_color: pg.Color
+        self.line_color: pg.Color
         self.update_status(status)
 
     def update_status(self, status: bool):
