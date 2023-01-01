@@ -12,34 +12,37 @@ from setting import *
 
 
 class Simulation:
-    def __init__(self, mode="train"):
+    def __init__(self, mode="train", snake=None):
         self.mode = mode
         self.game = GameWidget()
-
-        # genetic algorithm stuff
-        self.individuals: List[Snake] = []
-
-        for _ in range(GAConfig.num_population):
-            # create a new individual
-            snake = Snake()
-            self.individuals.append(snake)
 
         self.best_fitness = 0
         self.best_score = 0
 
-        self.current_individual = 0
-        self.current_generation = 0
-        self.population = Population(self.individuals)
+        if self.mode == "test":
+            self.snake = snake
+        else:
+            # genetic algorithm stuff
+            self.individuals: List[Snake] = []
 
-        self._mutation_bins = np.cumsum([GAConfig.probability_gaussian,
-                                         GAConfig.probability_random_uniform
-                                         ])
-        self._crossover_bins = np.cumsum([GAConfig.probability_SBX,
-                                          GAConfig.probability_SPBX
-                                          ])
-        self._next_gen_size = GAConfig.num_population + GAConfig.num_offspring
+            for _ in range(GAConfig.num_population):
+                # create a new individual
+                snake = Snake()
+                self.individuals.append(snake)
 
-        self.snake = self.population.individuals[self.current_individual]
+            self.current_individual = 0
+            self.current_generation = 0
+            self.population = Population(self.individuals)
+
+            self._mutation_bins = np.cumsum([GAConfig.probability_gaussian,
+                                             GAConfig.probability_random_uniform
+                                             ])
+            self._crossover_bins = np.cumsum([GAConfig.probability_SBX,
+                                              GAConfig.probability_SPBX
+                                              ])
+            self._next_gen_size = GAConfig.num_population + GAConfig.num_offspring
+
+            self.snake = self.population.individuals[self.current_individual]
         self.game.game_init(self.snake)
 
     def next_individual(self):
@@ -183,13 +186,17 @@ class Simulation:
         while True:
             if self.snake.is_alive:
                 self.game.update_snake()
-            else:
+                continue
+            if self.mode == "train":
                 self.next_individual()
+                continue
+            break
 
 
 class LabelsDisplay(PygameLayout):
     def __init__(self):
-        start_pos = Point(GUIConfig.snake_game_display_pos[0], GUIConfig.snake_game_display_pos[1] + GameConfig.map_max_height + 10)
+        start_pos = Point(GUIConfig.snake_game_display_pos[0],
+                          GUIConfig.snake_game_display_pos[1] + GameConfig.map_max_height + 10)
         height, width = GUIConfig.label_screen_size
         super().__init__(start_pos, height, width)
         self.font = pygame.font.Font(GUIConfig.font_family, GUIConfig.label_size)
@@ -219,7 +226,7 @@ class VisualizeFrame(PygameLayout):
         self.clock = pg.time.Clock()
         self.neural_vis = NeuralVisualize()
         self.label_vis = LabelsDisplay()
-        self.simulation = Simulation()
+        self.simulation: Optional[Simulation] = None
 
     def update_game(self):
         self.simulation.game.update_snake()
@@ -227,12 +234,16 @@ class VisualizeFrame(PygameLayout):
         self.background.blit(snake_game_screen, dest=GUIConfig.snake_game_display_pos)
 
     def update_label(self):
-        self.label_vis.set_label({
-            "Generation": f"{self.simulation.current_generation}",
-            "Individual": f"{self.simulation.current_individual}/{GAConfig.num_offspring}",
-            "Best score": f"{self.simulation.best_score}",
-            "Best Fitness": f"{self.simulation.best_fitness}",
-        })
+        if self.simulation.mode == 'test':
+            self.label_vis.set_label({
+                'Score': self.simulation.snake.score})
+        else:
+            self.label_vis.set_label({
+                "Generation": f"{self.simulation.current_generation}",
+                "Individual": f"{self.simulation.current_individual}/{GAConfig.num_offspring}",
+                "Best score": f"{self.simulation.best_score}",
+                "Best Fitness": f"{self.simulation.best_fitness}",
+            })
         self.label_vis.draw(self.background)
 
     def update_neural(self):
@@ -242,7 +253,6 @@ class VisualizeFrame(PygameLayout):
         network_outputs: List[np.ndarray] = snake.network.last_outputs
         snake_feature = [bool(f) for f in snake.get_feature()]
         output_feature = snake_feature[24:28]
-        # TODO update neural visualization
         self.neural_vis.update_network([snake_feature, network_outputs[0], network_outputs[1], output_feature])
         self.neural_vis.draw(neural_screen)
         self.background.blit(neural_screen, dest=GUIConfig.neural_screen_pos)
@@ -260,8 +270,9 @@ class VisualizeFrame(PygameLayout):
             if event.key == K_DOWN:
                 self.snake.look_in_direction(Direction.DOWN)
 
-    def run(self):
+    def run(self, mode, snake=None):
         counter = 0
+        self.simulation = Simulation(mode, snake)
         while True:
             self.clock.tick(GameConfig.game_fps)
             for event in pg.event.get():
@@ -270,7 +281,7 @@ class VisualizeFrame(PygameLayout):
                     sys.exit()
                 self.read_keyboard(event)
 
-            if self.simulation.mode == "manual" or self.simulation.mode == "slow":
+            if self.simulation.mode == "manual" or self.simulation.mode == "test":
                 counter = (counter + 1) % 10
                 if counter: continue
 
@@ -279,17 +290,25 @@ class VisualizeFrame(PygameLayout):
                 self.update_label()
                 self.update_neural()
             else:
-                self.simulation.next_individual()
+                if mode == "test":
+                    snake = Snake(self.simulation.snake.network)
+                    self.simulation = Simulation(mode, snake)
+                else:
+                    self.simulation.next_individual()
 
             pg.display.flip()
+
 
 def main():
     pg.init()
     pg.display.set_caption("Module Visualization")
+
+    snake = Snake.load("best_snake_1.pkl")
+
     frame = VisualizeFrame()
-    frame.run()
-    #simulation = Simulation()
-    #simulation.run_simulation()
+    frame.run("test", snake)
+    # simulation = Simulation()
+    # simulation.run_simulation()
 
 
 if __name__ == "__main__":

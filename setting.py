@@ -14,7 +14,7 @@ class GameConfig:
     grid_width: int = 40  # the value of the grid width (rectangle)
     grid_max_width: int = map_max_width // grid_width  # Cartesian coordinate which unit equals to grid_with
     grid_max_height: int = map_max_height // grid_width
-    game_fps: int = 30  # the frame per second of the game
+    game_fps: int = 100  # the frame per second of the game
     init_snake_length: int = 3  # the initial length of the snake
 
 
