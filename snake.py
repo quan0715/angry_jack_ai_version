@@ -30,17 +30,10 @@ class Snake(Individual):
         self.last_direction = None
         self.tail_direction = None
         self.directions: Queue = Queue()
-        # self.last_direction = Direction.RIGHT if self.head_pos.x > GameConfig.map_max_height // 2 else Direction.RIGHT
-        # body_
-        if self.head_pos.x > GameConfig.map_max_height // 2:
-            for i in range(1, GameConfig.snake_init_length):
-                self.add_body(Point(self.head_pos.x + GameConfig.grid_width * i, self.head_pos.y))
-            self.last_direction = Direction.LEFT
-        else:
-            self.last_direction = Direction.RIGHT
-            for i in range(1, GameConfig.snake_init_length):
-                self.add_body(Point(self.head_pos.x + GameConfig.grid_width * -1 * i, self.head_pos.y))
-        # self.directions.put()
+        self.last_direction = Direction.LEFT if self.head_pos.x > GameConfig.map_max_height // 2 else Direction.RIGHT
+        body_t = 1 if self.last_direction == Direction.LEFT else -1
+        for i in range(1, GameConfig.snake_init_length):
+            self.add_body(Point(self.head_pos.x + GameConfig.grid_width * i * body_t, self.head_pos.y))
         
         self.food = None
         self.is_alive = True
