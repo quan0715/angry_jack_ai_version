@@ -25,6 +25,7 @@ class Food:
 class Snake(Individual):
     def __init__(self, network: Optional[FFN] = None):
         super().__init__()
+        self.max_step: int = 50
         self.head_pos: Point = random_grid_position()
         self.bodies: List[Point] = [self.head_pos]
         self.last_direction = None
@@ -105,7 +106,8 @@ class Snake(Individual):
     def update(self):
         self._frames += 1
         self._frames_since_last_food += 1
-        if self._frames_since_last_food > 100:
+        if self._frames_since_last_food > self.max_step:
+            self._frames += self.max_step # yello card for not efficient
             self.is_alive = False
             return
 
@@ -118,6 +120,7 @@ class Snake(Individual):
                 self.win = True
                 return
         elif self.check_wall_collision() or self.check_body_collision():
+            self._frames *= 2 # red card for dead
             self.is_alive = False
             return
         # print(self.get_feature())
@@ -263,8 +266,9 @@ class Snake(Individual):
 
     def calculate_fitness(self):
         # Give positive minimum fitness for roulette wheel selection
-        self._fitness = self._frames + ((2 ** self.score) + (self.score ** 2.1) * 500) - (
-                ((.25 * self._frames) ** 1.3) * (self.score ** 1.2))
+        # (max steps)/(average score steps) + (score bonus)
+        self._fitness = self.score*self.max_step/self._frames +\
+            (self.score ** 2) * 100
         self._fitness = max(self._fitness, .1)
 
     @staticmethod
