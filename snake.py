@@ -46,6 +46,7 @@ class Snake(Individual):
 
         self.food = None
         self.is_alive = True
+        self.win = False
 
         # genetic algorithm stuff
         self.score = 0  # Number of apples snake gets
@@ -66,8 +67,8 @@ class Snake(Individual):
         if possibilities:
             loc = random.choice(possibilities)
             self.food = Food(loc)
-        else:
-            print("You win!")
+            return True
+        return False
 
     def look_in_direction(self, direction):
         self.directions.put(direction)
@@ -83,7 +84,10 @@ class Snake(Individual):
             self.score += 1
             self._frames_since_last_food = 0
             self.add_body(self.food.pos)
-            self.generate_food()
+
+            if not self.generate_food():
+                self.win = True
+                return
         elif self.check_wall_collision() or self.check_body_collision():
             self.is_alive = False
             return

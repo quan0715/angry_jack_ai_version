@@ -16,7 +16,7 @@ class GameConfig:
     grid_max_height: int = map_max_height // grid_width
     game_fps: int = 100  # the frame per second of the game
     snake_init_length: int = 3  # the initial length of the snake
-    vision_type: str = "distance"  # 'distance' or 'binary'
+    vision_type: str = "binary"  # 'distance' or 'binary'
 
 
 class GUIConfig:

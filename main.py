@@ -184,7 +184,7 @@ class Simulation:
 
     def run_simulation(self):
         while True:
-            if self.snake.is_alive:
+            if self.snake.is_alive and not self.snake.win:
                 self.game.update_snake()
                 continue
             if self.mode == "train":
@@ -284,7 +284,7 @@ class VisualizeFrame(PygameLayout):
                 counter = (counter + 1) % 10
                 if counter: continue
 
-            if self.simulation.snake.is_alive:
+            if self.simulation.snake.is_alive and not self.simulation.snake.win:
                 self.update_game()
                 self.update_label()
                 self.update_neural()
