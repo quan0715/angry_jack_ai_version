@@ -9,7 +9,7 @@ from config.setting import *
 
 
 class Simulation:
-    def __init__(self, mode="train", max_generation=2000, save_log=False):
+    def __init__(self, mode="train", max_generation=2000, save_log=False, init_snake:Optional[Snake] = None):
         self.mode = mode
         self.game = GameWidget()
 
@@ -21,16 +21,20 @@ class Simulation:
         self.best_fitness = 0
         self.best_score = 0
 
-        # genetic algorithm stuff
-        self.individuals: List[Snake] = []
-
-        for _ in range(GAConfig.num_population):
-            # create a new individual
-            snake = Snake()
-            self.individuals.append(snake)
-
         self.current_individual = 0
         self.current_generation = 0
+        
+        if init_snake is not None:
+            self.individuals = [init_snake] * GAConfig.num_population
+        else:
+            # genetic algorithm stuff
+            self.individuals: List[Snake] = []
+
+            for _ in range(GAConfig.num_population):
+                # create a new individual
+                snake = Snake()
+                self.individuals.append(snake)
+
         self.population = Population(self.individuals)
 
         self._mutation_bins = np.cumsum([GAConfig.probability_gaussian,
