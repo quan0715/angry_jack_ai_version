@@ -1,6 +1,8 @@
 from typing import Optional
 
 import pygame as pg
+from pygame.locals import *
+import sys
 
 from misc import *
 from snake import Snake
