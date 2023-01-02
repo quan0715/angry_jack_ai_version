@@ -1,8 +1,11 @@
 from config.setting import GameConfig
-from typing import Union, Tuple
+from typing import Union, Tuple, TYPE_CHECKING
 import random
 from enum import IntEnum
 from pygame import Surface
+
+if TYPE_CHECKING:
+    from snake import Snake, Food
 
 
 def get_map_size() -> Tuple[int, int]:
