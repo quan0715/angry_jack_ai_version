@@ -3,6 +3,7 @@ from pygame import Color
 
 
 class GameConfig:
+
     background_color = Color("#5C5C5C")  # the background color
     head_color: Color = Color("#FFC645")  # the color of snake head
     tail_color: Color = Color("#FFDF96")  # the color of snake tail(body)
@@ -13,6 +14,8 @@ class GameConfig:
     grid_width: int = 40  # the value of the grid width (rectangle)
     grid_max_width: int = map_max_width // grid_width  # Cartesian coordinate which unit equals to grid_with
     grid_max_height: int = map_max_height // grid_width
+    max_frames_without_food: int = grid_max_width * grid_max_height
+
     game_fps: int = 1000  # the frame per second of the game
     update_rate: int = 30  # the frame per second of the simulation
     snake_init_length: int = 3  # the initial length of the snake

@@ -105,7 +105,7 @@ class Snake(Individual):
     def update(self):
         self._frames += 1
         self._frames_since_last_food += 1
-        if self._frames_since_last_food > 50:
+        if self._frames_since_last_food > GameConfig.max_frames_without_food:
             self.is_alive = False
             return
 
