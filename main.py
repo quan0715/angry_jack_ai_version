@@ -326,13 +326,16 @@ class VisualizeFrame(PygameLayout):
 
 
 def main():
-    # pg.init()
-    # pg.display.set_caption("Angry Jack Visualization")
+    pg.init()
+    pg.display.set_caption("Module Visualization")
+    snake = Snake.load("best_snake.pkl")
+    frame = VisualizeFrame()
+    frame.run("train", snake)
     # simulation = Simulation()
     # frame = VisualizeFrame(simulation)
     # frame.run()
-    simulation = Simulation()
-    simulation.run_simulation()
+    # simulation = Simulation()
+    # simulation.run_simulation()
 
 
 if __name__ == "__main__":
