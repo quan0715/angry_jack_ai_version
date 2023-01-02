@@ -2,7 +2,9 @@ import json
 
 import pygame.font
 import sys
+import pickle
 
+from datetime import datetime
 from pygame.locals import *
 from game import *
 from neural_network import *
@@ -12,37 +14,48 @@ from setting import *
 
 
 class Simulation:
-    def __init__(self, mode="train", snake=None):
+    def __init__(self, mode="train", max_generation=2000):
         self.mode = mode
         self.game = GameWidget()
+
+        self.max_generation = max_generation
+        self.timestamp = datetime.now().strftime("%Y%m%d-%H%M%S")
+        self.log_file = open(f"log-{self.timestamp}.txt", "w")
 
         self.best_fitness = 0
         self.best_score = 0
 
-        if self.mode == "test":
-            self.snake = snake
-        else:
-            # genetic algorithm stuff
-            self.individuals: List[Snake] = []
+        # genetic algorithm stuff
+        self.individuals: List[Snake] = []
 
-            for _ in range(GAConfig.num_population):
-                # create a new individual
-                snake = Snake()
-                self.individuals.append(snake)
+        for _ in range(GAConfig.num_population):
+            # create a new individual
+            snake = Snake()
+            self.individuals.append(snake)
 
-            self.current_individual = 0
-            self.current_generation = 0
-            self.population = Population(self.individuals)
+        self.current_individual = 0
+        self.current_generation = 0
+        self.population = Population(self.individuals)
 
-            self._mutation_bins = np.cumsum([GAConfig.probability_gaussian,
-                                             GAConfig.probability_random_uniform
-                                             ])
-            self._crossover_bins = np.cumsum([GAConfig.probability_SBX,
-                                              GAConfig.probability_SPBX
-                                              ])
-            self._next_gen_size = GAConfig.num_population + GAConfig.num_offspring
+        self._mutation_bins = np.cumsum([GAConfig.probability_gaussian,
+                                         GAConfig.probability_random_uniform
+                                         ])
+        self._crossover_bins = np.cumsum([GAConfig.probability_SBX,
+                                          GAConfig.probability_SPBX
+                                          ])
+        self._next_gen_size = GAConfig.num_population + GAConfig.num_offspring
 
-            self.snake = self.population.individuals[self.current_individual]
+        self.snake = self.population.individuals[self.current_individual]
+        self.game.game_init(self.snake)
+
+    def write_log(self, text):
+        self.log_file.write(text)
+        self.log_file.write("\n")
+        self.log_file.flush()
+
+    def test_snake(self, snake):
+        self.mode = "test"
+        self.snake = snake
         self.game.game_init(self.snake)
 
     def next_individual(self):
@@ -55,28 +68,40 @@ class Simulation:
 
         if fitness > self.best_fitness:
             self.best_fitness = fitness
-            # TODO update label
 
         self.current_individual += 1
 
         if (self.current_generation > 0 and self.current_individual == self._next_gen_size) or \
                 (self.current_generation == 0 and self.current_individual == GAConfig.num_population):
-            print(
-                '======================= Gneration {} ======================='.format(self.current_generation))
-            print('----Max fitness:', self.population.fittest_individual.fitness)
-            print('----Best Score:', self.population.fittest_individual.score)
-            print('----Average fitness:', self.population.average_fitness)
+            avg = np.mean([snake.score for snake in self.population.individuals])
+            print(f'======================= Generation {self.current_generation} =======================')
+            print(f'Max fitness: {self.population.fittest_individual.fitness:.2e}')
+            print(f'Best Score: {self.population.fittest_individual.score}')
+            print(f'Average Score: {avg:.2f}', )
+            self.write_log(f"{self.current_generation} "
+                           f"{self.population.fittest_individual.fitness:.2e} "
+                           f"{self.population.fittest_individual.score} "
+                           f"{avg:.2f}")
             self.next_generation()
 
         self.snake = self.population.individuals[self.current_individual]
         self.game.game_init(self.snake)
 
-    def increment_generation(self):
-        self.current_generation += 1
-        # TODO update label
+    def save_generation(self):
+        networks = []
+        for snake in self.population.individuals:
+            networks.append(snake.network)
+
+        metadata = {'best_score': self.best_score,
+                    'best_fitness': self.best_fitness,
+                    'trained_step': self.current_generation,
+                    'population': networks}
+
+        with open('best_generation.pkl', 'wb') as f:
+            pickle.dump(metadata, f)
 
     def next_generation(self):
-        self.increment_generation()
+        self.current_generation += 1
         self.current_individual = 0
 
         # Calculate fitness of individuals
@@ -85,7 +110,9 @@ class Simulation:
 
         self.population.individuals = elitism_selection(self.population, GAConfig.num_population)
         if self.population.fittest_individual.fitness >= self.best_fitness:
+            print(f"Snake saved: score {self.best_score}, fitness {self.best_fitness:.2e}")
             self.population.fittest_individual.save()
+            self.save_generation()
 
         random.shuffle(self.population.individuals)
         next_pop: List[Snake] = [Snake(snake.network) for snake in self.population.individuals]
@@ -219,14 +246,16 @@ class LabelsDisplayWidget(PygameLayout):
 
 
 class VisualizeFrame(PygameLayout):
-    def __init__(self):
+    def __init__(self, simulation=None):
         super().__init__(Point(0, 0), GUIConfig.main_window_size[0], GUIConfig.main_window_size[1])
         self.background = pg.display.set_mode(self.get_size())
         self.background.fill(GUIConfig.background_color)
         self.clock = pg.time.Clock()
         self.neural_vis = NeuralVisualizeWidget()
         self.label_vis = LabelsDisplayWidget()
-        self.simulation = Simulation()
+        self.simulation = simulation
+        if simulation is None:
+            self.simulation = Simulation()
 
     def update_game(self):
         self.simulation.game.update_snake()
@@ -269,9 +298,8 @@ class VisualizeFrame(PygameLayout):
             if event.key == K_DOWN:
                 self.snake.look_in_direction(Direction.DOWN)
 
-    def run(self, mode, snake=None):
+    def run(self):
         counter = 0
-        self.simulation = Simulation(mode, snake)
         while True:
             self.clock.tick(GameConfig.game_fps)
             for event in pg.event.get():
@@ -289,9 +317,8 @@ class VisualizeFrame(PygameLayout):
                 self.update_label()
                 self.update_neural()
             else:
-                if mode == "test":
-                    snake = Snake(self.simulation.snake.network)
-                    self.simulation = Simulation(mode, snake)
+                if self.simulation.mode == "test":
+                    self.simulation.snake.respawn()
                 else:
                     self.simulation.next_individual()
 
@@ -299,13 +326,13 @@ class VisualizeFrame(PygameLayout):
 
 
 def main():
-    pg.init()
-    pg.display.set_caption("Module Visualization")
-    snake = Snake.load("best_snake.pkl")
-    frame = VisualizeFrame()
-    frame.run("test", snake)
+    # pg.init()
+    # pg.display.set_caption("Angry Jack Visualization")
     # simulation = Simulation()
-    # simulation.run_simulation()
+    # frame = VisualizeFrame(simulation)
+    # frame.run()
+    simulation = Simulation()
+    simulation.run_simulation()
 
 
 if __name__ == "__main__":

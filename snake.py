@@ -59,6 +59,35 @@ class Snake(Individual):
 
         self.generate_food()
 
+    def respawn(self):
+        self.is_alive = True
+        self.win = False
+        self.head_pos: Point = random_grid_position()
+        self.bodies: List[Point] = [self.head_pos]
+        self.last_direction = None
+        self.tail_direction = None
+        self.directions = Queue()
+
+        x, y = grid_to_coordinate(self.head_pos).get_point()
+
+        possible_initial_directions = [Direction.LEFT if x > GameConfig.map_max_height // 2 else Direction.RIGHT,
+                                       Direction.UP if y > GameConfig.map_max_width // 2 else Direction.DOWN]
+        self.initial_direction = random.choice(possible_initial_directions)
+        self.directions.put(self.initial_direction)
+
+        for _ in range(GameConfig.snake_init_length):
+            opposite_direction = direction_map[self.initial_direction]['check']
+            offset_x = direction_map[opposite_direction]['x_added']
+            offset_y = direction_map[opposite_direction]['y_added']
+            self.add_body(Point(self.bodies[-1].x + offset_x, self.bodies[-1].y + offset_y))
+
+        self.score = 0
+        self._fitness = 0
+        self._frames = 0
+        self._frames_since_last_food = 0
+
+        self.generate_food()
+
     def generate_food(self):
         # Find all possible points where the snake is not currently
         possibilities = [Point(x, y) for x in range(GameConfig.grid_max_width)
@@ -246,5 +275,4 @@ class Snake(Individual):
 
     def save(self):
         with open(f'best_snake.pkl', 'wb') as f:
-            print(f"Snake saved: score {self.score}, fitness {self._fitness:.2f}")
             pickle.dump(self.network, f)
