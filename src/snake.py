@@ -274,5 +274,5 @@ class Snake(Individual):
             return Snake(network)
 
     def save(self):
-        with open(f'best_snake.pkl', 'wb') as f:
+        with open(f'resources/best_snake.pkl', 'wb') as f:
             pickle.dump(self.network, f)

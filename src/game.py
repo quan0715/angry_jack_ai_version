@@ -4,7 +4,7 @@ import pygame as pg
 
 from misc import *
 from snake import Snake
-from setting import *
+from config.setting import *
 
 
 class GameWidget(PygameLayout):

@@ -1,6 +1,6 @@
 from typing import List
 
-from setting import GAConfig
+from config.setting import GAConfig
 from .FFN import FFN
 from .Dense import Dense
 

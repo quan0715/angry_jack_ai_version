@@ -5,7 +5,7 @@ from pygame.locals import *
 
 from game import *
 from neural_visualization import *
-from setting import *
+from config.setting import *
 from simulation import Simulation
 
 

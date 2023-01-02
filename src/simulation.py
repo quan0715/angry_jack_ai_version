@@ -5,7 +5,7 @@ from game import *
 from genetic_algorithm import *
 from neural_network import *
 from neural_visualization import *
-from setting import *
+from config.setting import *
 
 
 class Simulation:
@@ -16,7 +16,7 @@ class Simulation:
         self.max_generation = max_generation
         if save_log:
             self.timestamp = datetime.now().strftime("%Y%m%d-%H%M%S")
-            self.log_file = open(f"log-{self.timestamp}.txt", "w")
+            self.log_file = open(f"logs/log-{self.timestamp}.txt", "w")
 
         self.best_fitness = 0
         self.best_score = 0
@@ -94,7 +94,7 @@ class Simulation:
                     'trained_step': self.current_generation,
                     'population': networks}
 
-        with open('best_generation.pkl', 'wb') as f:
+        with open('resources/best_generation.pkl', 'wb') as f:
             pickle.dump(metadata, f)
 
     def next_generation(self):

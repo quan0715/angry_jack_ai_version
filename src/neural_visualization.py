@@ -1,6 +1,6 @@
 from typing import List
 import numpy as np
-from setting import *
+from config.setting import *
 from misc import *
 import pygame as pg
 

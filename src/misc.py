@@ -1,4 +1,4 @@
-from setting import GameConfig
+from config.setting import GameConfig
 from typing import Union, Tuple
 import random
 from enum import IntEnum
