@@ -1,6 +1,6 @@
 from typing import List
 
-from config.setting import GAConfig
+from setting import GAConfig
 from .FFN import FFN
 from .Dense import Dense
 
@@ -23,8 +23,10 @@ def create_model(input_size: int,
 
 
 def create_default_model():
-    return create_model(input_size=32, output_size=4, hidden_layers=GAConfig.hidden_layer_size
-        , output_activation_func='relu')
+    return create_model(input_size=32,
+                        output_size=4,
+                        hidden_layers=GAConfig.hidden_layer_size,
+                        output_activation_func='relu')
 
 
 def get_direction(model: FFN, feature: np.ndarray):

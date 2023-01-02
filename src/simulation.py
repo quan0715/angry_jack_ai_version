@@ -5,7 +5,7 @@ from game import *
 from genetic_algorithm import *
 from neural_network import *
 from neural_visualization import *
-from config.setting import *
+from setting import *
 
 
 class Simulation:

@@ -3,9 +3,8 @@ import sys
 import pygame.font
 from pygame.locals import *
 
-from game import *
 from neural_visualization import *
-from config.setting import *
+from setting import *
 from simulation import Simulation
 
 

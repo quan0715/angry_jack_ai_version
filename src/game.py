@@ -1,12 +1,8 @@
-from typing import Optional
-
 import pygame as pg
-from pygame.locals import *
-import sys
 
 from misc import *
+from setting import *
 from snake import Snake
-from config.setting import *
 
 
 class GameWidget(PygameLayout):

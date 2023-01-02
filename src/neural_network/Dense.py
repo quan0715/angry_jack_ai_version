@@ -1,6 +1,6 @@
 from __future__ import annotations
 from typing import Optional
-from neural_network import FFN
+from neural_network import Dense
 from .activation_func import get_activation_function
 
 import numpy as np
