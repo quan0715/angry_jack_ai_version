@@ -1,5 +1,3 @@
-from __future__ import annotations
-
 from typing import Optional
 
 import pygame as pg
@@ -16,7 +14,7 @@ class GameWidget(PygameLayout):
             GameConfig.map_max_height,
             GameConfig.map_max_width
         )
-        self.snake: Optional[Snake] = None
+        self.snake = None
 
     def game_init(self, snake: Snake):
         self.snake = snake

@@ -1,4 +1,3 @@
-import json
 from typing import Tuple
 from pygame import Color
 
@@ -15,6 +14,7 @@ class GameConfig:
     grid_max_width: int = map_max_width // grid_width  # Cartesian coordinate which unit equals to grid_with
     grid_max_height: int = map_max_height // grid_width
     game_fps: int = 100  # the frame per second of the game
+    update_rate: int = 30  # the frame per second of the simulation
     snake_init_length: int = 3  # the initial length of the snake
     vision_type: str = "binary"  # 'distance' or 'binary'
 
@@ -42,13 +42,14 @@ class GUIConfig:
 
 
 class GAConfig:
-    with open('Network_Config.json', 'r') as f:
-        setting_file = json.load(f)
-    hidden_layer_size = setting_file['hidden_layer_size']
-    num_population = setting_file['num_population']
-    num_offspring = setting_file['num_offspring']
-    probability_gaussian = setting_file['probability_gaussian']
-    probability_random_uniform = setting_file['probability_random_uniform']
-    probability_SBX = setting_file['probability_SBX']
-    probability_SPBX = setting_file['probability_SPBX']
-    mutation_rate = setting_file['mutation_rate']
+    hidden_layer_size = [20, 12]
+    num_population = 500
+    num_offspring = 1000
+
+    probability_gaussian = 1.0
+    probability_random_uniform = 0.0
+
+    probability_SBX = 0.5
+    probability_SPBX = 0.5
+
+    mutation_rate = 0.05
